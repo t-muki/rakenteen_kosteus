@@ -1,0 +1,10 @@
+node_modules/
+dist/
+tsconfig.tsbuildinfo
+.DS_Store
+*.local
+*.log
+.vite/
+
+# Paikallinen lähdemateriaali — ei julkaista
+esimerkkejä/

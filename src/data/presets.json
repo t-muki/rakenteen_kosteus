@@ -1,0 +1,112 @@
+{
+  "rakenteet": [
+    {
+      "nimi": "Puurunkoinen ulkoseinä",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "kipsilevy", "paksuus": 13 },
+        { "materiaaliId": "koolaus-villa", "paksuus": 48 },
+        { "materiaaliId": "hoyrynsulku-pe", "paksuus": 0.2 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 150 },
+        { "materiaaliId": "kivivilla-tuulensuoja", "paksuus": 30 },
+        { "materiaaliId": "ilmarako-tuulettuva", "paksuus": 25 },
+        { "materiaaliId": "ulkoverhouslauta", "paksuus": 23 }
+      ]
+    },
+    {
+      "nimi": "Puurunkoseinä ilman höyrynsulkua",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "kipsilevy", "paksuus": 13 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 200 },
+        { "materiaaliId": "huokoinen-kuitulevy", "paksuus": 12 },
+        { "materiaaliId": "ilmarako-tuulettuva", "paksuus": 25 },
+        { "materiaaliId": "ulkoverhouslauta", "paksuus": 23 }
+      ]
+    },
+    {
+      "nimi": "Betonisandwich-elementti",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "tasoite", "paksuus": 3 },
+        { "materiaaliId": "betoni", "paksuus": 80 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 200 },
+        { "materiaaliId": "betoni", "paksuus": 70 }
+      ]
+    },
+    {
+      "nimi": "Tiili–villa–tiili",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "kalkkisementtilaasti", "paksuus": 15 },
+        { "materiaaliId": "tiili-kalkkihiekka", "paksuus": 130 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 150 },
+        { "materiaaliId": "ilmarako-tuulettuva", "paksuus": 30 },
+        { "materiaaliId": "tiili-poltettu", "paksuus": 85 }
+      ]
+    },
+    {
+      "nimi": "Hirsiseinä",
+      "tyyppi": "seina",
+      "kerrokset": [{ "materiaaliId": "hirsi", "paksuus": 200 }]
+    },
+    {
+      "nimi": "Sisäpuolelta lisäeristetty betoniseinä (riskirakenne)",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "kipsilevy", "paksuus": 13 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 100 },
+        { "materiaaliId": "betoni", "paksuus": 200 },
+        { "materiaaliId": "sementtilaasti", "paksuus": 20 }
+      ]
+    },
+    {
+      "nimi": "Märkätilan seinä (laatoitus + vedeneriste)",
+      "tyyppi": "seina",
+      "kerrokset": [
+        { "materiaaliId": "laatoitus-keraaminen", "paksuus": 15 },
+        { "materiaaliId": "vedeneriste", "paksuus": 1 },
+        { "materiaaliId": "kipsilevy-marka", "paksuus": 13 },
+        { "materiaaliId": "mineraalivilla-036", "paksuus": 150 },
+        { "materiaaliId": "kivivilla-tuulensuoja", "paksuus": 30 },
+        { "materiaaliId": "ilmarako-tuulettuva", "paksuus": 25 },
+        { "materiaaliId": "ulkoverhouslauta", "paksuus": 23 }
+      ]
+    },
+    {
+      "nimi": "Yläpohja, puhallusvilla",
+      "tyyppi": "ylapohja",
+      "kerrokset": [
+        { "materiaaliId": "kipsilevy", "paksuus": 13 },
+        { "materiaaliId": "hoyrynsulku-pe", "paksuus": 0.2 },
+        { "materiaaliId": "mineraalivilla-041", "paksuus": 500 }
+      ]
+    },
+    {
+      "nimi": "Loivan katon rakenne (bitumikermi)",
+      "tyyppi": "ylapohja",
+      "kerrokset": [
+        { "materiaaliId": "betoni", "paksuus": 200 },
+        { "materiaaliId": "hoyrynsulku-pe", "paksuus": 0.2 },
+        { "materiaaliId": "eps", "paksuus": 300 },
+        { "materiaaliId": "bitumikermi", "paksuus": 8 }
+      ]
+    }
+  ],
+  "sisaOlosuhteet": [
+    { "nimi": "Asuinhuone, normaali", "T": 21, "RH": 40 },
+    { "nimi": "Asuinhuone, kostea", "T": 21, "RH": 50 },
+    { "nimi": "Viileä, kostea tila", "T": 15, "RH": 70 },
+    { "nimi": "Märkätila", "T": 24, "RH": 70 },
+    { "nimi": "Uimahalli", "T": 26, "RH": 65 },
+    { "nimi": "Kylmä varasto", "T": 5, "RH": 80 }
+  ],
+  "ulkoOlosuhteet": [
+    { "nimi": "Mitoitustalvi (Etelä-Suomi)", "T": -26, "RH": 90 },
+    { "nimi": "Tammikuun keskiarvo", "T": -10, "RH": 90 },
+    { "nimi": "Marras–maaliskuu, keskim.", "T": -5, "RH": 88 },
+    { "nimi": "Syksy / kevät", "T": 5, "RH": 85 },
+    { "nimi": "Kesä", "T": 22, "RH": 65 },
+    { "nimi": "Helle", "T": 30, "RH": 55 }
+  ]
+}
