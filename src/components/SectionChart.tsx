@@ -1,7 +1,8 @@
 /**
  * Leikkauskuva: lämpötila ja kastepistelämpötila päällekkäin samalla
- * °C-asteikolla. Siellä missä kastepistekäyrä nousee lämpötilakäyrän
- * yläpuolelle, kosteus voi tiivistyä — se alue korostetaan.
+ * °C-asteikolla. Kastepiste kertoo, mihin lämpötilaan kyseisessä kohdassa oleva
+ * vesihöyry voi jäähtyä ennen tiivistymistä. Missä käyrät kohtaavat, ilma on
+ * kyllästystilassa ja vettä tiivistyy — se vyöhyke korostetaan.
  */
 
 import { useMemo, useRef, useState } from 'react';
@@ -11,7 +12,6 @@ import {
   ILMA_LEVEYS,
   KerrosVyohykkeet,
   MARGINAALI,
-  aluePolku,
   jaotukset,
   luoSkaala,
   polku,
@@ -37,7 +37,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
   const rakenneAlku = MARGINAALI.vasen + ILMA_LEVEYS;
   const rakenneLoppu = LEVEYS - MARGINAALI.oikea - ILMA_LEVEYS;
 
-  const { xPix, yPix, yArvot, lampoPolku, kastepistePolku, kondenssiPolut } = useMemo(() => {
+  const { xPix, yPix, yArvot, lampoPolku, kastepistePolku, kondenssiVyohykkeet } = useMemo(() => {
     const paksuus = tulos.paksuus || 0.001;
     const xPix = luoSkaala(0, paksuus, rakenneAlku, rakenneLoppu);
 
@@ -50,12 +50,12 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
     const lampoPisteet = tulos.profiili.map((p) => ({ x: xPix(p.x), y: yPix(p.T) }));
     const kastePisteet = tulos.profiili.map((p) => ({ x: xPix(p.x), y: yPix(p.Tdp) }));
 
-    // Kondenssialueet täytetään lämpötila- ja kastepistekäyrän väliin.
-    const kondenssiPolut = tulos.kondenssiAlueet.map((alue) => {
-      const osa = tulos.profiili.filter((p) => p.x >= alue.xAlku && p.x <= alue.xLoppu);
-      const ylä = osa.map((p) => ({ x: xPix(p.x), y: yPix(p.Tdp) }));
-      const ala = osa.map((p) => ({ x: xPix(p.x), y: yPix(p.T) }));
-      return aluePolku(ylä, ala);
+    // Tiivistymisvyöhykkeellä käyrät yhtyvät, joten vyöhyke korostetaan
+    // pystysuorana alueena eikä käyrien välisenä täyttönä.
+    const kondenssiVyohykkeet = tulos.kondenssiAlueet.map((alue) => {
+      const vasen = xPix(alue.xAlku);
+      const oikea = xPix(alue.xLoppu);
+      return { x: vasen, leveys: Math.max(3, oikea - vasen) };
     });
 
     return {
@@ -64,7 +64,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
       yArvot: jaotukset(yPix.min, yPix.max, 7),
       lampoPolku: polku(lampoPisteet),
       kastepistePolku: polku(kastePisteet),
-      kondenssiPolut,
+      kondenssiVyohykkeet,
     };
   }, [tulos, sisaT, ulkoT, piirtoAla, piirtoYlä, rakenneAlku, rakenneLoppu]);
 
@@ -137,9 +137,16 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         nollaviiva
       />
 
-      {/* Kondenssialueet */}
-      {kondenssiPolut.map((d, i) => (
-        <path key={i} d={d} className="kondenssiAlue" />
+      {/* Tiivistymisvyöhykkeet */}
+      {kondenssiVyohykkeet.map((v, i) => (
+        <rect
+          key={i}
+          x={v.x}
+          y={piirtoYlä}
+          width={v.leveys}
+          height={piirtoAla - piirtoYlä}
+          className="kondenssiAlue"
+        />
       ))}
 
       {/* Pintavastusten yli tapahtuva lämpötilan muutos */}
@@ -287,7 +294,7 @@ function Legenda({ x, y, kondenssia }: { x: number; y: number; kondenssia: boole
         <g transform={`translate(${x + kohdat.length * 200},${y})`}>
           <rect x={0} y={-7} width={26} height={14} className="kondenssiAlue" />
           <text x={34} y={4}>
-            Kondenssiriski
+            Tiivistymisvyöhyke
           </text>
         </g>
       )}

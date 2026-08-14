@@ -141,6 +141,19 @@ const materiaalit: Materiaali[] = [
     lahde: 'testi',
   },
   {
+    id: 'teraslevy',
+    nimi: 'Teräsohutlevy',
+    kategoria: 'kalvo',
+    lambda: 50,
+    mu: 1000000,
+    rho: 7800,
+    c: 450,
+    sd: 1500,
+    oletusPaksuus: 0.6,
+    vari: '#999',
+    lahde: 'testi',
+  },
+  {
     id: 'tuulensuoja',
     nimi: 'Tuulensuojalevy',
     kategoria: 'levy',
@@ -261,21 +274,100 @@ describe('laske — kondenssitasojen yhdistäminen', () => {
   });
 });
 
+describe('laske — höyrynsulun vaikutus näkyy kastepistekäyrässä (issue #1)', () => {
+  // Kun rakenteen ulko-osassa on höyrynsulkua tiiviimpi kerros, höyrynsulun
+  // osuus kokonaisdiffuusiovastuksesta jää pieneksi. Kastepistekäyrän on silti
+  // pudottava höyrynsulun kohdalla, koska höyryvirta katkeaa siinä.
+  const tiivisUlkokuori = (hoyrynsulku: boolean): Kerros[] =>
+    [
+      kerros('kipsi', 13),
+      ...(hoyrynsulku ? [kerros('hoyrynsulku', 0.2)] : []),
+      kerros('villa', 200),
+      kerros('tuulensuoja', 12),
+      kerros('teraslevy', 0.6),
+    ].filter(Boolean);
+
+  const kylma: Rakenne['sisa'] = { T: 21, RH: 40 };
+
+  const laskeTapaus = (hoyrynsulku: boolean) =>
+    laske(
+      {
+        nimi: 'testi',
+        tyyppi: 'seina',
+        kerrokset: tiivisUlkokuori(hoyrynsulku),
+        sisa: kylma,
+        ulko: { T: -26, RH: 90 },
+      },
+      hakemisto,
+    );
+
+  it('kastepiste putoaa jyrkästi höyrynsulun yli', () => {
+    const tulos = laskeTapaus(true);
+    const sisapuoli = tulos.profiili.find((p) => p.x < 0.013)!;
+    const ulkopuoli = tulos.profiili.find((p) => p.x > 0.014)!;
+
+    // Ennen höyrynsulkua kastepiste on sisäilman tasolla, sen jälkeen selvästi alempi.
+    expect(sisapuoli.Tdp).toBeGreaterThan(5);
+    expect(ulkopuoli.Tdp).toBeLessThan(sisapuoli.Tdp - 10);
+  });
+
+  it('höyrynsulku vähentää kondenssia merkittävästi', () => {
+    const kanssa = laskeTapaus(true);
+    const ilman = laskeTapaus(false);
+
+    expect(ilman.kondenssiYhteensa).toBeGreaterThan(kanssa.kondenssiYhteensa * 10);
+  });
+
+  it('kastepiste on aina lämpötilan alapuolella tai yhtä suuri', () => {
+    for (const tulos of [laskeTapaus(true), laskeTapaus(false)]) {
+      for (const piste of tulos.profiili) {
+        expect(piste.Tdp).toBeLessThanOrEqual(piste.T + 1e-6);
+      }
+    }
+  });
+
+  it('tiivistymisvyöhyke rajautuu kohtiin, joissa kosteus on kyllästystilassa', () => {
+    const tulos = laskeTapaus(true);
+    expect(tulos.kondenssiAlueet.length).toBeGreaterThan(0);
+
+    for (const piste of tulos.profiili) {
+      const vyohykkeella = tulos.kondenssiAlueet.some(
+        (a) => piste.x >= a.xAlku - 1e-9 && piste.x <= a.xLoppu + 1e-9,
+      );
+      if (vyohykkeella) {
+        expect(piste.RH).toBeCloseTo(100, 3);
+        expect(piste.Tdp).toBeCloseTo(piste.T, 3);
+      }
+    }
+  });
+});
+
 describe('laske — profiilin sisäinen johdonmukaisuus', () => {
   const tulos = laske(
     talviRakenne([kerros('kipsi', 13), kerros('villa', 200), kerros('tuulensuoja', 12)]),
     hakemisto,
   );
 
-  it('kastepistekäyrä ylittää lämpötilakäyrän täsmälleen kondenssialueella', () => {
+  it('kastepistekäyrä yhtyy lämpötilakäyrään täsmälleen tiivistymisvyöhykkeellä', () => {
+    let vyohykkeellaPisteita = 0;
+    let vyohykkeenUlkopuolella = 0;
+
     for (const piste of tulos.profiili) {
-      const kondenssiAlueella = tulos.kondenssiAlueet.some(
-        (a) => piste.x > a.xAlku + 1e-9 && piste.x < a.xLoppu - 1e-9,
+      const vyohykkeella = tulos.kondenssiAlueet.some(
+        (a) => piste.x >= a.xAlku - 1e-9 && piste.x <= a.xLoppu + 1e-9,
       );
-      if (kondenssiAlueella) {
-        expect(piste.Tdp).toBeGreaterThan(piste.T);
+      if (vyohykkeella) {
+        vyohykkeellaPisteita++;
+        expect(piste.Tdp).toBeCloseTo(piste.T, 3);
+      } else {
+        vyohykkeenUlkopuolella++;
+        expect(piste.Tdp).toBeLessThan(piste.T + 1e-6);
       }
     }
+
+    // Varmistetaan ettei tarkastelu jäänyt tyhjäksi kummassakaan haarassa.
+    expect(vyohykkeellaPisteita).toBeGreaterThan(0);
+    expect(vyohykkeenUlkopuolella).toBeGreaterThan(0);
   });
 
   it('korjattu osapaine ei ylitä kyllästyspainetta missään', () => {

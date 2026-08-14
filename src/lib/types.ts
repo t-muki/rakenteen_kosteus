@@ -172,8 +172,10 @@ export interface ProfiiliPiste {
   pLin: number;
   /** Höyryn osapaine kondenssi huomioiden (Glaserin konveksi verhokäyrä) [Pa] */
   p: number;
-  /** Kastepistelämpötila pLin:stä laskettuna [°C] */
+  /** Kastepistelämpötila todellisesta osapaineesta [°C] */
   Tdp: number;
+  /** Kastepistelämpötila kondensoitumattomasta osapaineesta, vertailuksi [°C] */
+  TdpLin: number;
   /** Suhteellinen kosteus korjatusta osapaineesta [%] */
   RH: number;
 }

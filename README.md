@@ -76,8 +76,9 @@ havaitaan myös silloin, kun se alkaa keskeltä paksua eristekerrosta.
 ## Kaksi näkymää samasta asiasta
 
 **Leikkauskuva (°C)** — lämpötila ja kastepistelämpötila päällekkäin, x-akselina todellinen paksuus.
-Missä kastepistekäyrä nousee lämpötilakäyrän yläpuolelle, siellä kosteus tiivistyy. Kastepistekäyrä
-lasketaan kondensoitumattomasta osapaineesta, eli se kertoo riskin.
+Kastepiste lasketaan todellisesta osapaineesta, eli kondenssi huomioiden. Mitä kauempana käyrät ovat
+toisistaan, sitä kuivempi rakenne on siinä kohtaa; missä ne kohtaavat, ilma on kyllästystilassa ja
+vettä tiivistyy. Höyrynsulku näkyy kastepistekäyrän jyrkkänä pudotuksena.
 
 **Glaser-diagrammi (Pa)** — osapaine ja kyllästyspaine, x-akselina diffuusiovastus `s_d`. Osapaine
 piirtyy suorana, ja kondenssin vaikutus näkyy profiilin taittumisena. Sama ilmiö, tarkempi lukema.

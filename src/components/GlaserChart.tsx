@@ -11,7 +11,6 @@ import {
   Akselit,
   KerrosVyohykkeet,
   MARGINAALI,
-  aluePolku,
   jaotukset,
   luoSkaala,
   polku,
@@ -49,7 +48,7 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   // on luettavampi silloin, kun yksi kerros hallitsee diffuusiovastusta.
   const koordinaatti = (p: { sd: number; x: number }) => (akseli === 'sd' ? p.sd : p.x);
 
-  const { xPix, yPix, yArvot, pSatPolku, pPolku, pLinPolku, kondenssiPolut } = useMemo(() => {
+  const { xPix, yPix, yArvot, pSatPolku, pPolku, pLinPolku, kondenssiVyohykkeet } = useMemo(() => {
     const loppu = (akseli === 'sd' ? tulos.sdTot : viimeinenX(tulos)) || 0.001;
     const xPix = luoSkaala(0, loppu, piirtoVasen, piirtoOikea);
 
@@ -60,15 +59,11 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
     const pisteet = (valitse: (p: (typeof tulos.profiili)[number]) => number) =>
       tulos.profiili.map((p) => ({ x: xPix(koordinaatti(p)), y: yPix(valitse(p)) }));
 
-    const kondenssiPolut = tulos.kondenssiAlueet.map((alue) => {
-      const alkuArvo = akseli === 'sd' ? alue.sdAlku : alue.xAlku;
-      const loppuArvo = akseli === 'sd' ? alue.sdLoppu : alue.xLoppu;
-      const osa = tulos.profiili.filter(
-        (p) => koordinaatti(p) >= alkuArvo && koordinaatti(p) <= loppuArvo,
-      );
-      const ylä = osa.map((p) => ({ x: xPix(koordinaatti(p)), y: yPix(p.pLin) }));
-      const ala = osa.map((p) => ({ x: xPix(koordinaatti(p)), y: yPix(p.pSat) }));
-      return aluePolku(ylä, ala);
+    // Tiivistymisvyöhyke: osapaine on saavuttanut kyllästyspaineen.
+    const kondenssiVyohykkeet = tulos.kondenssiAlueet.map((alue) => {
+      const vasen = xPix(akseli === 'sd' ? alue.sdAlku : alue.xAlku);
+      const oikea = xPix(akseli === 'sd' ? alue.sdLoppu : alue.xLoppu);
+      return { x: vasen, leveys: Math.max(3, oikea - vasen) };
     });
 
     return {
@@ -78,7 +73,7 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
       pSatPolku: polku(pisteet((p) => p.pSat)),
       pPolku: polku(pisteet((p) => p.p)),
       pLinPolku: polku(pisteet((p) => p.pLin)),
-      kondenssiPolut,
+      kondenssiVyohykkeet,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tulos, akseli, piirtoAla, piirtoYlä, piirtoVasen, piirtoOikea]);
@@ -136,8 +131,15 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
         yMuotoilu={(v) => v.toFixed(0)}
       />
 
-      {kondenssiPolut.map((d, i) => (
-        <path key={i} d={d} className="kondenssiAlue" />
+      {kondenssiVyohykkeet.map((v, i) => (
+        <rect
+          key={i}
+          x={v.x}
+          y={piirtoYlä}
+          width={v.leveys}
+          height={piirtoAla - piirtoYlä}
+          className="kondenssiAlue"
+        />
       ))}
 
       <path d={pSatPolku} className="pSatKayra" />
@@ -241,7 +243,7 @@ function Legenda({ x, y, kondenssia }: { x: number; y: number; kondenssia: boole
         <g transform={`translate(${x + kohdat.length * 200},${y})`}>
           <rect x={0} y={-7} width={26} height={14} className="kondenssiAlue" />
           <text x={34} y={4}>
-            Kondenssiriski
+            Tiivistymisvyöhyke
           </text>
         </g>
       )}

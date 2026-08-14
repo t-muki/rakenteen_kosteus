@@ -137,19 +137,25 @@ export function laske(rakenne: Rakenne, materiaalit: Map<string, Materiaali>): T
   const profiili: ProfiiliPiste[] = naytteet.map((n) => {
     const pLin = lineaarinenPaine(n.sd, sdTot, pAlku, pLoppu);
     const pKorj = kuori.length >= 2 ? paineMurtoviivalla(kuori, n.sd) : pLin;
+    const p = Math.min(pKorj, n.p);
     return {
       x: n.x,
       sd: n.sd,
       T: n.T,
       pSat: n.p,
       pLin,
-      p: Math.min(pKorj, n.p),
-      Tdp: kastepiste(pLin),
-      RH: suhteellinenKosteus(Math.min(pKorj, n.p), n.T),
+      p,
+      // Kastepiste lasketaan todellisesta osapaineesta. Jos se laskettaisiin
+      // kondensoitumattomasta pLin:stä, tiivistävän kerroksen ulkopuolinen
+      // kastepiste näyttäisi aivan liian korkealta — esimerkiksi höyrynsulku
+      // vaikuttaisi tehottomalta, vaikka se katkaisee höyryvirran.
+      Tdp: kastepiste(p),
+      TdpLin: kastepiste(pLin),
+      RH: suhteellinenKosteus(p, n.T),
     };
   });
 
-  // --- Kondenssiriskialueet: missä lineaarinen paine ylittäisi kyllästyspaineen ---
+  // --- Tiivistymisvyöhykkeet: missä osapaine on kyllästystilassa ---
   const kondenssiAlueet = etsiKondenssiAlueet(profiili);
 
   // --- Solmut (kerrosrajat) tulostaulukkoa varten ---
@@ -274,32 +280,32 @@ function yhdistaTasot(
   });
 }
 
-/** Etsii välit, joilla lineaarinen höyrynpaine ylittää kyllästyspaineen. */
+/**
+ * Etsii tiivistymisvyöhykkeet: välit, joilla todellinen osapaine on saavuttanut
+ * kyllästyspaineen. Näissä kohdissa suhteellinen kosteus on 100 % ja
+ * kastepistekäyrä yhtyy lämpötilakäyrään.
+ */
 function etsiKondenssiAlueet(profiili: ProfiiliPiste[]): KondenssiAlue[] {
   const alueet: KondenssiAlue[] = [];
   let alku: ProfiiliPiste | null = null;
 
-  const leikkaus = (a: ProfiiliPiste, b: ProfiiliPiste) => {
-    const ero1 = a.pLin - a.pSat;
-    const ero2 = b.pLin - b.pSat;
-    const nimittaja = ero1 - ero2;
-    const t = Math.abs(nimittaja) < 1e-12 ? 0 : ero1 / nimittaja;
-    return {
-      x: a.x + t * (b.x - a.x),
-      sd: a.sd + t * (b.sd - a.sd),
-    };
-  };
+  // Verhokäyrä koskettaa kyllästyskäyrää, joten vertailu tehdään suhteellisella
+  // toleranssilla liukulukupyöristysten varalta.
+  const kyllastynyt = (p: ProfiiliPiste) => p.p >= p.pSat * (1 - 1e-9);
 
   for (let i = 0; i < profiili.length; i++) {
     const piste = profiili[i];
-    const yli = piste.pLin > piste.pSat;
 
-    if (yli && !alku) {
-      const raja = i > 0 ? leikkaus(profiili[i - 1], piste) : { x: piste.x, sd: piste.sd };
-      alku = { ...piste, x: raja.x, sd: raja.sd };
-    } else if (!yli && alku) {
-      const raja = leikkaus(profiili[i - 1], piste);
-      alueet.push({ xAlku: alku.x, xLoppu: raja.x, sdAlku: alku.sd, sdLoppu: raja.sd });
+    if (kyllastynyt(piste) && !alku) {
+      alku = piste;
+    } else if (!kyllastynyt(piste) && alku) {
+      const edellinen = profiili[i - 1];
+      alueet.push({
+        xAlku: alku.x,
+        xLoppu: edellinen.x,
+        sdAlku: alku.sd,
+        sdLoppu: edellinen.sd,
+      });
       alku = null;
     }
   }
