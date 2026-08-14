@@ -330,6 +330,30 @@ describe('laske — höyrynsulun vaikutus näkyy kastepistekäyrässä (issue #1
     expect(ilman.kondenssiYhteensa).toBeGreaterThan(kanssa.kondenssiYhteensa * 10);
   });
 
+  it('kosteusrasituskäyrä on aina vähintään todellisen kastepisteen tasolla', () => {
+    // TdpLin kuvaa tilannetta ilman tiivistymistä, joten se ei voi olla
+    // todellista kastepistettä alempana. Kun kondenssia ei ole, ne yhtyvät.
+    const kanssa = laskeTapaus(true);
+    for (const piste of kanssa.profiili) {
+      expect(piste.TdpLin).toBeGreaterThanOrEqual(piste.Tdp - 1e-6);
+    }
+
+    const kuiva = laske(
+      {
+        nimi: 'kuiva',
+        tyyppi: 'seina',
+        kerrokset: [kerros('kipsi', 13), kerros('hoyrynsulku', 0.2), kerros('villa', 200)],
+        sisa: { T: 21, RH: 40 },
+        ulko: { T: -10, RH: 90 },
+      },
+      hakemisto,
+    );
+    expect(kuiva.kondenssiTasot).toHaveLength(0);
+    for (const piste of kuiva.profiili) {
+      expect(piste.TdpLin).toBeCloseTo(piste.Tdp, 6);
+    }
+  });
+
   it('kastepiste on aina lämpötilan alapuolella tai yhtä suuri', () => {
     for (const tulos of [laskeTapaus(true), laskeTapaus(false)]) {
       for (const piste of tulos.profiili) {

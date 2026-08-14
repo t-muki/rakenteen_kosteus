@@ -237,7 +237,7 @@ export default function App() {
 
           <p className="ohje ohje--kuvaaja">
             {nakyma === 'leikkaus'
-              ? 'Kastepistekäyrä kertoo, mihin lämpötilaan kyseisessä kohdassa oleva vesihöyry voi jäähtyä ennen tiivistymistä. Mitä kauempana käyrät ovat toisistaan, sitä kuivempi rakenne on; missä ne kohtaavat, ilma on kyllästystilassa ja vettä tiivistyy. Höyrynsulku näkyy käyrän jyrkkänä pudotuksena.'
+              ? 'Kastepistekäyrä kertoo, mihin lämpötilaan kyseisessä kohdassa oleva vesihöyry voi jäähtyä ennen tiivistymistä; missä se kohtaa lämpötilakäyrän, vettä tiivistyy. Pisteviiva näyttää, mihin kastepiste nousisi ilman tiivistymistä — mitä korkeammalle se kohoaa lämpötilan yli, sitä ankarampi kosteusrasitus on. Höyrynsulku näkyy kastepistekäyrän jyrkkänä pudotuksena.'
               : glaserAkseli === 'sd'
                 ? 'Osapaine piirtyy suorana, koska vaaka-akselina on diffuusiovastus s_d. Jos suora leikkaisi kyllästyskäyrän, profiili taittuu sitä pitkin ja taitekohtaan tiivistyy vettä. Höyrytiivis kerros vie akselilta paljon tilaa — vaihda tarvittaessa paksuusakseliin.'
                 : 'Vaaka-akselina on todellinen paksuus, joten kerrokset näkyvät oikeassa mittasuhteessa. Osapaine ei tällä akselilla ole suora; menetelmän oma esitys on s_d-akseli.'}

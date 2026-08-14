@@ -80,6 +80,11 @@ Kastepiste lasketaan todellisesta osapaineesta, eli kondenssi huomioiden. Mitä 
 toisistaan, sitä kuivempi rakenne on siinä kohtaa; missä ne kohtaavat, ilma on kyllästystilassa ja
 vettä tiivistyy. Höyrynsulku näkyy kastepistekäyrän jyrkkänä pudotuksena.
 
+Kun tiivistymistä esiintyy, mukaan tulee kolmas käyrä: **kastepiste ilman tiivistymistä**. Se kertoo,
+mihin kastepiste nousisi, jos vesi ei tiivistyisi matkalla — sen ja lämpötilakäyrän välinen ala on
+kosteusrasituksen mitta. Mitä korkeammalle käyrä kohoaa lämpötilan yli, sitä ankarampi tilanne on.
+Kuivassa rakenteessa käyrä yhtyy kastepistekäyrään eikä sitä piirretä erikseen.
+
 **Glaser-diagrammi (Pa)** — osapaine ja kyllästyspaine, x-akselina diffuusiovastus `s_d`. Osapaine
 piirtyy suorana, ja kondenssin vaikutus näkyy profiilin taittumisena. Sama ilmiö, tarkempi lukema.
 
