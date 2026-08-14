@@ -37,6 +37,13 @@ const NAYTTEITA_MAX = 60;
 /** Kondenssivuo tämän alle tulkitaan nollaksi [kg/(m²·s)]. */
 const VUO_EPSILON = 1e-14;
 
+/**
+ * Kondenssimäärä, jonka alle tiivistyminen on käytännössä merkityksetöntä
+ * [g/(m²·vrk)]. Vuositasolla tämä on alle 4 g/m², joka kuivuu rakenteesta
+ * moninkertaisesti nopeammin kuin kertyy.
+ */
+export const VAHAINEN_KONDENSSI = 0.01;
+
 /** Näytepiste laskennan sisäisessä muodossa (kuljettaa x:n kuoren läpi). */
 interface Nayte {
   sd: number;
@@ -195,7 +202,7 @@ export function laske(rakenne: Rakenne, materiaalit: Map<string, Materiaali>): T
       `Sisäpinnan suhteellinen kosteus on ${RHsi.toFixed(0)} % — pitkäaikaisena homeen kasvun raja-arvo (80 %) ylittyy.`,
     );
   }
-  if (kondenssiTasot.length > 0) {
+  if (kondenssiTasot.length > 0 && kondenssiYhteensa >= VAHAINEN_KONDENSSI) {
     varoitukset.push(
       `Rakenteen sisään tiivistyy vettä ${kondenssiYhteensa.toFixed(2)} g/(m²·vrk) ${kondenssiTasot.length === 1 ? 'yhdessä kohdassa' : `${kondenssiTasot.length} kohdassa`}.`,
     );
@@ -320,7 +327,32 @@ function etsiKondenssiAlueet(profiili: ProfiiliPiste[]): KondenssiAlue[] {
     });
   }
 
-  return alueet;
+  return yhdistaAlueet(alueet);
+}
+
+/**
+ * Yhdistää lähekkäiset vyöhykkeet. Verhokäyrä on paloittain suora, kyllästyskäyrä
+ * kaareva, joten yhtenäisen tiivistymisalueen sisään jää yksittäisiä näytepisteitä,
+ * joissa osapaine alittaa kyllästyspaineen häviävän vähän. Ne eivät ole erillisiä
+ * vyöhykkeitä vaan menetelmän paloittaisuudesta johtuvia aukkoja.
+ */
+function yhdistaAlueet(alueet: KondenssiAlue[]): KondenssiAlue[] {
+  if (alueet.length <= 1) return alueet;
+
+  const RAKO = (3 * NAYTEVALI_MM) / 1000;
+  const tulos: KondenssiAlue[] = [alueet[0]];
+
+  for (let i = 1; i < alueet.length; i++) {
+    const edellinen = tulos[tulos.length - 1];
+    if (alueet[i].xAlku - edellinen.xLoppu <= RAKO) {
+      edellinen.xLoppu = alueet[i].xLoppu;
+      edellinen.sdLoppu = alueet[i].sdLoppu;
+    } else {
+      tulos.push(alueet[i]);
+    }
+  }
+
+  return tulos;
 }
 
 /** Poimii profiilista kerrosrajoja vastaavat solmupisteet. */

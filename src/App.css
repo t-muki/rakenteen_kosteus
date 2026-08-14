@@ -766,6 +766,12 @@ button:focus-visible {
   color: #8d1424;
 }
 
+.tilanne--vahainen {
+  background: #fdf6e8;
+  border-color: #ecd9ad;
+  color: #7a5312;
+}
+
 .tilanne strong {
   display: block;
   margin-bottom: 4px;

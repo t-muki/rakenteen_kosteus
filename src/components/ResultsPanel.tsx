@@ -1,31 +1,58 @@
 /** Numeeriset tulokset: tunnusluvut, varoitukset ja kerrosrajojen taulukko. */
 
+import { VAHAINEN_KONDENSSI } from '../lib/calculate';
 import type { Tulos } from '../lib/types';
 
 interface Props {
   tulos: Tulos;
 }
 
+/** Näyttömuoto kondenssimäärälle; hyvin pienet arvot eivät pyöristy nollaan. */
+function maara(gVrk: number): string {
+  return gVrk < VAHAINEN_KONDENSSI ? `alle ${VAHAINEN_KONDENSSI} ` : `${gVrk.toFixed(2)} `;
+}
+
 export function ResultsPanel({ tulos }: Props) {
   const kondenssia = tulos.kondenssiTasot.length > 0;
+  const merkittava = kondenssia && tulos.kondenssiYhteensa >= VAHAINEN_KONDENSSI;
 
   return (
-    <div className="tulokset">
-      <div className={kondenssia ? 'tilanne tilanne--riski' : 'tilanne tilanne--ok'}>
+    <div
+      className="tulokset"
+      data-tilanne={merkittava ? 'riski' : kondenssia ? 'vahainen' : 'ok'}
+    >
+      <div
+        className={
+          merkittava
+            ? 'tilanne tilanne--riski'
+            : kondenssia
+              ? 'tilanne tilanne--vahainen'
+              : 'tilanne tilanne--ok'
+        }
+      >
         <strong>
-          {kondenssia
+          {merkittava
             ? 'Rakenteeseen tiivistyy kosteutta'
-            : 'Rakenteeseen ei tiivisty kosteutta'}
+            : kondenssia
+              ? 'Tiivistyminen on häviävän vähäistä'
+              : 'Rakenteeseen ei tiivisty kosteutta'}
         </strong>
         {kondenssia ? (
-          <ul>
-            {tulos.kondenssiTasot.map((taso, i) => (
-              <li key={i}>
-                {taso.sijainti}: {taso.gcVrk.toFixed(2)} g/(m²·vrk), lämpötila{' '}
-                {taso.T.toFixed(1)} °C
-              </li>
-            ))}
-          </ul>
+          <>
+            {!merkittava && (
+              <p>
+                Laskennallista tiivistymistä esiintyy, mutta määrä on niin pieni, ettei sillä ole
+                rakenteen kannalta merkitystä.
+              </p>
+            )}
+            <ul>
+              {tulos.kondenssiTasot.map((taso, i) => (
+                <li key={i}>
+                  {taso.sijainti}: {maara(taso.gcVrk)}g/(m²·vrk), lämpötila {taso.T.toFixed(1)} °C
+                </li>
+              ))}
+            </ul>
+          </>
         ) : (
           <p>
             Vesihöyryn osapaine pysyy kyllästyspaineen alapuolella koko rakenteen läpi näillä

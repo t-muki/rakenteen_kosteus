@@ -141,6 +141,18 @@ const materiaalit: Materiaali[] = [
     lahde: 'testi',
   },
   {
+    id: 'hirsi',
+    nimi: 'Hirsi',
+    kategoria: 'puu',
+    lambda: 0.12,
+    mu: 40,
+    rho: 500,
+    c: 1600,
+    oletusPaksuus: 200,
+    vari: '#d3a05e',
+    lahde: 'testi',
+  },
+  {
     id: 'teraslevy',
     nimi: 'Teräsohutlevy',
     kategoria: 'kalvo',
@@ -339,6 +351,117 @@ describe('laske — höyrynsulun vaikutus näkyy kastepistekäyrässä (issue #1
         expect(piste.Tdp).toBeCloseTo(piste.T, 3);
       }
     }
+  });
+});
+
+describe('laske — tulosten johdonmukaisuus ja herkkyys', () => {
+  const kuivaRakenne = (sisa: Rakenne['sisa'], ulko: Rakenne['ulko']): Rakenne => ({
+    nimi: 'testi',
+    tyyppi: 'seina',
+    kerrokset: [
+      kerros('kipsi', 13),
+      kerros('hoyrynsulku', 0.2),
+      kerros('villa', 200),
+      kerros('tuulensuoja', 12),
+    ],
+    sisa,
+    ulko,
+  });
+
+  it('ei ilmoita kondenssia toimivassa rakenteessa millään talviolosuhteella', () => {
+    for (const ulkoT of [-30, -26, -20, -10, -5, 0, 5]) {
+      const tulos = laske(kuivaRakenne({ T: 21, RH: 40 }, { T: ulkoT, RH: 90 }), hakemisto);
+      expect(tulos.kondenssiTasot, `ulkolämpötila ${ulkoT} °C`).toHaveLength(0);
+      expect(tulos.kondenssiAlueet, `ulkolämpötila ${ulkoT} °C`).toHaveLength(0);
+    }
+  });
+
+  it('ei ilmoita kondenssia tavanomaisessa kesätilanteessa', () => {
+    for (const ulkoT of [18, 22, 25]) {
+      const tulos = laske(kuivaRakenne({ T: 21, RH: 45 }, { T: ulkoT, RH: 70 }), hakemisto);
+      expect(tulos.kondenssiTasot, `ulkolämpötila ${ulkoT} °C`).toHaveLength(0);
+    }
+  });
+
+  it('havaitsee kesäkondenssin, kun höyry virtaa ulkoa sisään', () => {
+    // Kuuma ja kostea ulkoilma, viilennetty sisätila: höyrynsulku on nyt
+    // rakenteen kylmällä puolella, ja kosteus tiivistyy sen ulkopintaan.
+    const tulos = laske(kuivaRakenne({ T: 21, RH: 45 }, { T: 32, RH: 75 }), hakemisto);
+
+    expect(tulos.pUlko).toBeGreaterThan(tulos.pSisa);
+    expect(tulos.kondenssiTasot.length).toBeGreaterThan(0);
+    // Tiivistyminen osuu höyrynsulun tuntumaan, rakenteen sisäosaan.
+    expect(tulos.kondenssiTasot[0].x).toBeLessThan(0.05);
+  });
+
+  it('yhtenäinen tiivistymisalue raportoidaan yhtenä vyöhykkeenä', () => {
+    // Yhtenäisessä kerroksessa verhokäyrä seuraa kaarevaa kyllästyskäyrää pitkän
+    // matkaa; paloittainen approksimaatio ei saa pilkkoa aluetta useaksi.
+    const tulos = laske(
+      {
+        nimi: 'testi',
+        tyyppi: 'seina',
+        kerrokset: [kerros('hirsi', 200)],
+        sisa: { T: 24, RH: 70 },
+        ulko: { T: -26, RH: 90 },
+      },
+      hakemisto,
+    );
+
+    expect(tulos.kondenssiAlueet).toHaveLength(1);
+    expect(tulos.kondenssiTasot).toHaveLength(1);
+    expect(tulos.kondenssiAlueet[0].xLoppu - tulos.kondenssiAlueet[0].xAlku).toBeGreaterThan(0.02);
+  });
+
+  it('jokaista tiivistymisvyöhykettä vastaa kondenssitaso', () => {
+    const tapaukset: Rakenne[] = [
+      kuivaRakenne({ T: 24, RH: 70 }, { T: -26, RH: 90 }),
+      {
+        nimi: 'ilman sulkua',
+        tyyppi: 'seina',
+        kerrokset: [kerros('kipsi', 13), kerros('villa', 200), kerros('tuulensuoja', 12)],
+        sisa: { T: 21, RH: 50 },
+        ulko: { T: -10, RH: 90 },
+      },
+      {
+        nimi: 'hirsi',
+        tyyppi: 'seina',
+        kerrokset: [kerros('hirsi', 200)],
+        sisa: { T: 24, RH: 70 },
+        ulko: { T: -10, RH: 90 },
+      },
+    ];
+
+    for (const rakenne of tapaukset) {
+      const tulos = laske(rakenne, hakemisto);
+      if (tulos.kondenssiAlueet.length > 0) {
+        expect(tulos.kondenssiTasot.length, rakenne.nimi).toBeGreaterThan(0);
+      }
+      if (tulos.kondenssiTasot.length > 0) {
+        expect(tulos.kondenssiAlueet.length, rakenne.nimi).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('kondenssi kasvaa kun sisäilma kostuu', () => {
+    const maarat = [30, 40, 50, 60, 70].map(
+      (RH) =>
+        laske(
+          {
+            nimi: 'testi',
+            tyyppi: 'seina',
+            kerrokset: [kerros('kipsi', 13), kerros('villa', 200), kerros('tuulensuoja', 12)],
+            sisa: { T: 21, RH },
+            ulko: { T: -10, RH: 90 },
+          },
+          hakemisto,
+        ).kondenssiYhteensa,
+    );
+
+    for (let i = 1; i < maarat.length; i++) {
+      expect(maarat[i]).toBeGreaterThanOrEqual(maarat[i - 1]);
+    }
+    expect(maarat[maarat.length - 1]).toBeGreaterThan(maarat[0]);
   });
 });
 
