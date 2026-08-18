@@ -99,7 +99,9 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   const seuraaHiirta = (e: React.MouseEvent<SVGRectElement>) => {
     const laatikko = alueRef.current?.getBoundingClientRect();
     if (!laatikko) return;
-    const suhde = LEVEYS / laatikko.width;
+    // Laatikko kattaa vain piirtoalueen, joten skaalaus lasketaan sen
+    // leveydestä — ei koko SVG:n leveydestä, joka veisi osoittimen harhaan.
+    const suhde = (piirtoOikea - piirtoVasen) / laatikko.width;
     const x = piirtoVasen + (e.clientX - laatikko.left) * suhde;
     setKohdistin(Math.min(piirtoOikea, Math.max(piirtoVasen, x)));
   };

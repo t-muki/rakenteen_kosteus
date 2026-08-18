@@ -34,6 +34,12 @@ import type {
 const NAYTEVALI_MM = 4;
 /** Enimmäismäärä näytteitä yhtä kerrosta kohti. */
 const NAYTTEITA_MAX = 60;
+/**
+ * Tavoiteltu näytemäärä koko diffuusiovastuksen matkalla. Ohut höyrynsulku voi
+ * yksinään kattaa lähes koko s_d-akselin, joten pelkkä paksuuden mukainen
+ * näytteistys jättäisi Glaser-diagrammin keskiosan täysin ilman pisteitä.
+ */
+const NAYTTEITA_SD_AKSELILLA = 90;
 /** Kondenssivuo tämän alle tulkitaan nollaksi [kg/(m²·s)]. */
 const VUO_EPSILON = 1e-14;
 
@@ -94,10 +100,12 @@ export function laske(rakenne: Rakenne, materiaalit: Map<string, Materiaali>): T
   lisaa(0, 0, Tsi);
   let TkerroksenAlku = Tsi;
   for (const k of laskennassa) {
-    const n = Math.max(
-      1,
-      Math.min(NAYTTEITA_MAX, Math.ceil((k.d * 1000) / NAYTEVALI_MM)),
-    );
+    // Kerros näytteistetään sekä paksuuden että diffuusiovastuksen suhteen,
+    // jotta molemmat esitystavat saavat riittävän tiheän pisteistön.
+    const paksuudenMukaan = Math.ceil((k.d * 1000) / NAYTEVALI_MM);
+    const sdnMukaan =
+      sdTot > 0 ? Math.ceil(k.sd / (sdTot / NAYTTEITA_SD_AKSELILLA)) : 0;
+    const n = Math.max(1, Math.min(NAYTTEITA_MAX, Math.max(paksuudenMukaan, sdnMukaan)));
     for (let j = 1; j <= n; j++) {
       const osuus = j / n;
       lisaa(

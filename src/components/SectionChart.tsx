@@ -105,9 +105,15 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
   const kerrosReuna = (k: LaskettuKerros, puoli: 'alku' | 'loppu') =>
     xPix(puoli === 'alku' ? k.xAlku : k.xLoppu);
 
+  // Laskenta ulottuu vain tuulettuvaan ilmarakoon asti, joten osoitin rajataan
+  // siihen osaan rakennetta, josta arvoja on olemassa.
+  const dataLoppu =
+    tulos.profiili.length > 0 ? xPix(tulos.profiili[tulos.profiili.length - 1].x) : rakenneAlku;
+
   const osoitettu = useMemo(() => {
     if (kohdistin === null || tulos.profiili.length === 0) return null;
-    const x = (kohdistin - rakenneAlku) / (rakenneLoppu - rakenneAlku) * (tulos.paksuus || 0);
+    const x =
+      ((kohdistin - rakenneAlku) / (rakenneLoppu - rakenneAlku)) * (tulos.paksuus || 0);
     return tulos.profiili.reduce((paras, p) =>
       Math.abs(p.x - x) < Math.abs(paras.x - x) ? p : paras,
     );
@@ -116,9 +122,11 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
   const seuraaHiirta = (e: React.MouseEvent<SVGRectElement>) => {
     const laatikko = alueRef.current?.getBoundingClientRect();
     if (!laatikko) return;
-    const suhde = LEVEYS / laatikko.width;
+    // Laatikko kattaa vain piirtoalueen, joten skaalaus lasketaan sen
+    // leveydestä — ei koko SVG:n leveydestä, joka veisi osoittimen harhaan.
+    const suhde = (dataLoppu - rakenneAlku) / laatikko.width;
     const x = rakenneAlku + (e.clientX - laatikko.left) * suhde;
-    setKohdistin(Math.min(rakenneLoppu, Math.max(rakenneAlku, x)));
+    setKohdistin(Math.min(dataLoppu, Math.max(rakenneAlku, x)));
   };
 
   return (
@@ -295,7 +303,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         ref={alueRef}
         x={rakenneAlku}
         y={piirtoYlä}
-        width={Math.max(1, rakenneLoppu - rakenneAlku)}
+        width={Math.max(1, dataLoppu - rakenneAlku)}
         height={piirtoAla - piirtoYlä}
         fill="transparent"
         onMouseMove={seuraaHiirta}
