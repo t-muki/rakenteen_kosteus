@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { ClimateControls } from './components/ClimateControls';
 import { GlaserChart } from './components/GlaserChart';
 import { LayerEditor } from './components/LayerEditor';
+import { PrintDetails, PrintHeader } from './components/PrintReport';
 import { ResultsPanel } from './components/ResultsPanel';
 import { SectionChart } from './components/SectionChart';
 import { laske } from './lib/calculate';
@@ -15,7 +16,7 @@ import {
   tallennaOmatMateriaalit,
   ulkoPresetit,
 } from './lib/materials';
-import { jakoOsoite, lataaTila, lueOsoitteesta, tallennaTila, viePng, vieSvg } from './lib/share';
+import { jakoOsoite, lataaTila, lueOsoitteesta, tallennaTila, viePng } from './lib/share';
 import type { Materiaali, Rakenne, RakenneTyyppi } from './lib/types';
 
 type Nakyma = 'leikkaus' | 'glaser';
@@ -72,12 +73,10 @@ export default function App() {
     }
   };
 
-  const vie = (muoto: 'svg' | 'png') => {
+  const viePngKuva = () => {
     const svg = nakyma === 'leikkaus' ? leikkausRef.current : glaserRef.current;
     if (!svg) return;
-    const nimi = `${rakenne.nimi.replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}-${nakyma}`;
-    if (muoto === 'svg') vieSvg(svg, nimi);
-    else viePng(svg, nimi);
+    viePng(svg, `${rakenne.nimi.replace(/[^\p{L}\p{N}]+/gu, '-').toLowerCase()}-${nakyma}`);
   };
 
   const lisaaOmaMateriaali = (materiaali: Materiaali) => {
@@ -100,14 +99,25 @@ export default function App() {
           <button type="button" className="nappi" onClick={jaa}>
             Jaa linkkinä
           </button>
-          <button type="button" className="nappi" onClick={() => vie('png')}>
-            Tallenna PNG
+          <button type="button" className="nappi" onClick={viePngKuva}>
+            Tallenna kuva (PNG)
           </button>
-          <button type="button" className="nappi" onClick={() => vie('svg')}>
-            Tallenna SVG
+          <button
+            type="button"
+            className="nappi"
+            onClick={() => window.print()}
+            title="Avaa tulostus — valitse kohteeksi “Tallenna PDF-tiedostona”"
+          >
+            Tulosta / PDF
           </button>
         </div>
       </header>
+
+      <PrintHeader
+        rakenne={rakenne}
+        tulos={tulos}
+        nakyma={nakyma === 'leikkaus' ? 'Leikkauskuva (°C)' : 'Glaser-diagrammi (Pa)'}
+      />
 
       {ilmoitus && <p className="ilmoitus">{ilmoitus}</p>}
 
@@ -248,6 +258,8 @@ export default function App() {
           <ResultsPanel tulos={tulos} />
         </section>
       </main>
+
+      <PrintDetails rakenne={rakenne} tulos={tulos} />
 
       <footer className="alatunniste">
         <p>

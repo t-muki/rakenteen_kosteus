@@ -91,19 +91,6 @@ export function lataaTila(): Rakenne | null {
   }
 }
 
-/** Tallentaa SVG-kuvaajan tiedostoksi. */
-export function vieSvg(svg: SVGSVGElement, tiedostonimi: string): void {
-  const kopio = svg.cloneNode(true) as SVGSVGElement;
-  kopio.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-  liitaTyylit(kopio);
-
-  const data = new XMLSerializer().serializeToString(kopio);
-  lataaTiedosto(
-    new Blob([data], { type: 'image/svg+xml;charset=utf-8' }),
-    `${tiedostonimi}.svg`,
-  );
-}
-
 /** Tallentaa kuvaajan PNG-kuvana. */
 export function viePng(svg: SVGSVGElement, tiedostonimi: string, skaala = 2): void {
   const kopio = svg.cloneNode(true) as SVGSVGElement;

@@ -960,3 +960,227 @@ button:focus-visible {
   color: var(--teksti-himmea);
   line-height: 1.6;
 }
+
+/* --- Tulostusraportti --- */
+
+/* Raportti on olemassa vain paperilla; ruudulla se pysyy piilossa. */
+.tulostus {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 14mm 13mm;
+  }
+
+  :root {
+    font-size: 10pt;
+  }
+
+  body {
+    background: #fff;
+  }
+
+  .sovellus {
+    max-width: none;
+    padding: 0;
+  }
+
+  /* Piilota kaikki vuorovaikutteinen: syötteet, napit, välilehdet, ohjeet. */
+  .ylatunniste,
+  .ilmoitus,
+  .paneeli--syote,
+  .paneeli--tulokset,
+  .valilehdet,
+  .ohje--kuvaaja,
+  .alatunniste {
+    display: none !important;
+  }
+
+  .ruudukko {
+    display: block;
+  }
+
+  .paneeli--kuvaaja {
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    break-inside: avoid;
+  }
+
+  .kuvaaja {
+    width: 100%;
+    height: auto;
+  }
+
+  .tulostus {
+    display: block;
+  }
+
+  .tulostus__otsikko {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12mm;
+    padding-bottom: 3mm;
+    margin-bottom: 4mm;
+    border-bottom: 1.5pt solid #1c2530;
+  }
+
+  .tulostus__otsikko h1 {
+    margin: 0 0 1mm;
+    font-size: 15pt;
+    line-height: 1.2;
+  }
+
+  .tulostus__otsikko p {
+    margin: 0;
+    font-size: 9.5pt;
+    color: #444e58;
+  }
+
+  .tulostus__meta {
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .tulostus__nakyma {
+    margin: 0 0 2mm;
+    font-size: 9pt;
+    color: #5d6b7a;
+  }
+
+  .tulostus__lohko {
+    break-inside: avoid;
+    margin-top: 5mm;
+  }
+
+  .tulostus__lohko h2 {
+    margin: 0 0 2mm;
+    font-size: 11pt;
+    padding-bottom: 1mm;
+    border-bottom: 0.5pt solid #b6bec6;
+  }
+
+  .tulostus__lohko h3 {
+    margin: 3mm 0 1.5mm;
+    font-size: 10pt;
+  }
+
+  .tulostus__taulukko {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tulostus__taulukko th,
+  .tulostus__taulukko td {
+    padding: 1.1mm 2mm;
+    border-bottom: 0.4pt solid #d0d6dc;
+    text-align: right;
+  }
+
+  .tulostus__taulukko thead th {
+    font-weight: 600;
+    font-size: 8.5pt;
+    color: #444e58;
+    border-bottom: 0.8pt solid #8a95a1;
+  }
+
+  .tulostus__taulukko tbody th,
+  .tulostus__taulukko tfoot th {
+    text-align: left;
+    font-weight: 400;
+  }
+
+  .tulostus__taulukko thead th:first-child,
+  .tulostus__taulukko thead th:nth-child(2),
+  .tulostus__taulukko tbody td:first-child {
+    text-align: left;
+  }
+
+  .tulostus__taulukko tfoot td,
+  .tulostus__taulukko tfoot th {
+    font-weight: 600;
+    border-top: 0.8pt solid #8a95a1;
+    border-bottom: none;
+  }
+
+  .tulostus__taulukko .rivi--passiivinen {
+    color: #7c8894;
+  }
+
+  .tulostus__taulukko .rivi--riski th,
+  .tulostus__taulukko .rivi--riski td {
+    background: #fbe9eb;
+    font-weight: 600;
+  }
+
+  .tulostus__tunnusluvut {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2mm 4mm;
+    margin: 0;
+  }
+
+  .tulostus__tunnusluvut dt {
+    font-size: 8pt;
+    color: #5d6b7a;
+  }
+
+  .tulostus__tunnusluvut dd {
+    margin: 0;
+    font-size: 10pt;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .tulostus__tilanne--ok,
+  .tulostus__tilanne--riski {
+    margin: 0 0 2.5mm;
+    padding: 2mm 3mm;
+    font-size: 10pt;
+    font-weight: 600;
+    border-left: 2pt solid;
+  }
+
+  .tulostus__tilanne--ok {
+    border-color: #16794c;
+    background: #eef7f2;
+  }
+
+  .tulostus__tilanne--riski {
+    border-color: #b3253a;
+    background: #fbe9eb;
+  }
+
+  .tulostus__varoitukset {
+    margin: 0;
+    padding-left: 5mm;
+    font-size: 9pt;
+    line-height: 1.45;
+  }
+
+  .tulostus__alaviite {
+    margin: 1.5mm 0 0;
+    font-size: 8pt;
+    color: #5d6b7a;
+    line-height: 1.4;
+  }
+
+  .tulostus__alatunniste {
+    margin-top: 6mm;
+    padding-top: 2.5mm;
+    border-top: 0.5pt solid #b6bec6;
+    break-inside: avoid;
+  }
+
+  .tulostus__alatunniste p {
+    margin: 0 0 1.5mm;
+    font-size: 7.5pt;
+    color: #5d6b7a;
+    line-height: 1.45;
+  }
+}

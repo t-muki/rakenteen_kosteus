@@ -107,11 +107,18 @@ selaimen muistiin.
 
 **Tarkista suunnittelussa aina tuotekohtaiset arvot** — taulukkoarvot ovat suuntaa antavia.
 
-## Rakenteen jakaminen
+## Jakaminen ja tallennus
 
 "Jaa linkkinä" pakkaa rakenteen ja olosuhteet osoiterivin hash-osaan. Linkki toimii sellaisenaan
-myös GitHub Pagesissa. Viimeisin tila tallentuu automaattisesti selaimen muistiin. Kuvaajan voi
-tallentaa PNG- tai SVG-tiedostona.
+myös GitHub Pagesissa. Viimeisin tila tallentuu automaattisesti selaimen muistiin.
+
+**Tallenna kuva (PNG)** vie pelkän kaavion kuvatiedostona, esimerkiksi esitykseen liitettäväksi.
+
+**Tulosta / PDF** avaa selaimen tulostuksen, josta valitaan "Tallenna PDF-tiedostona". PDF on
+kokonainen raportti: otsikkotiedot ja päiväys, näkyvissä oleva kaavio, olosuhteet, kerrostaulukko
+(λ, μ, R, s_d kerroksittain), tunnusluvut, kondenssitulokset huomioineen, kerrosrajojen arvot sekä
+menetelmä- ja rajoitusteksti. Kaavio piirtyy PDF:ään vektorina, joten se pysyy terävänä
+zoomattaessa ja tulostettaessa.
 
 ## Julkaisu GitHub Pagesiin
 

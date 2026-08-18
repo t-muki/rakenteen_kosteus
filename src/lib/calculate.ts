@@ -50,6 +50,11 @@ const VUO_EPSILON = 1e-14;
  */
 export const VAHAINEN_KONDENSSI = 0.01;
 
+/** Luku suomalaisella desimaalierottimella käyttäjälle näytettäviin teksteihin. */
+function fi(arvo: number, desimaaleja = 1): string {
+  return arvo.toFixed(desimaaleja).replace('.', ',');
+}
+
 /** Näytepiste laskennan sisäisessä muodossa (kuljettaa x:n kuoren läpi). */
 interface Nayte {
   sd: number;
@@ -203,16 +208,16 @@ export function laske(rakenne: Rakenne, materiaalit: Map<string, Materiaali>): T
   }
   if (pSisa > pSatSisapinta) {
     varoitukset.push(
-      `Sisäpinnalle tiivistyy vettä: pinnan lämpötila ${Tsi.toFixed(1)} °C on sisäilman kastepisteen ${kastepiste(pSisa).toFixed(1)} °C alapuolella.`,
+      `Sisäpinnalle tiivistyy vettä: pinnan lämpötila ${fi(Tsi)} °C on sisäilman kastepisteen ${fi(kastepiste(pSisa))} °C alapuolella.`,
     );
   } else if (RHsi >= 80) {
     varoitukset.push(
-      `Sisäpinnan suhteellinen kosteus on ${RHsi.toFixed(0)} % — pitkäaikaisena homeen kasvun raja-arvo (80 %) ylittyy.`,
+      `Sisäpinnan suhteellinen kosteus on ${fi(RHsi, 0)} % — pitkäaikaisena homeen kasvun raja-arvo (80 %) ylittyy.`,
     );
   }
   if (kondenssiTasot.length > 0 && kondenssiYhteensa >= VAHAINEN_KONDENSSI) {
     varoitukset.push(
-      `Rakenteen sisään tiivistyy vettä ${kondenssiYhteensa.toFixed(2)} g/(m²·vrk) ${kondenssiTasot.length === 1 ? 'yhdessä kohdassa' : `${kondenssiTasot.length} kohdassa`}.`,
+      `Rakenteen sisään tiivistyy vettä ${fi(kondenssiYhteensa, 2)} g/(m²·vrk) ${kondenssiTasot.length === 1 ? 'yhdessä kohdassa' : `${kondenssiTasot.length} kohdassa`}.`,
     );
   }
   if (Ti <= Te) {
@@ -388,14 +393,14 @@ function kokoaSolmut(
       Math.abs(piste.x - x) < Math.abs(paras.x - x) ? piste : paras,
     );
 
-  const solmut: Solmu[] = [solmuPisteesta(profiili[0], `Sisäpinta (${Tsi.toFixed(1)} °C)`)];
+  const solmut: Solmu[] = [solmuPisteesta(profiili[0], `Sisäpinta (${fi(Tsi)} °C)`)];
 
   for (let i = 0; i < kerrokset.length; i++) {
     const k = kerrokset[i];
     const seuraava = kerrokset[i + 1];
     const nimi = seuraava
       ? `${k.materiaali.nimi} / ${seuraava.materiaali.nimi}`
-      : `Ulkopinta (${Tse.toFixed(1)} °C)`;
+      : `Ulkopinta (${fi(Tse)} °C)`;
     solmut.push(solmuPisteesta(lahin(k.xLoppu), nimi));
   }
 
