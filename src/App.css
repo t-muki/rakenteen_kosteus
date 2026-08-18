@@ -582,25 +582,77 @@ button:focus-visible {
 
 .vyohykeOtsikko {
   fill: var(--teksti-himmea);
-  font-size: 12px;
+  font-size: 13.5px;
   text-anchor: middle;
 }
 
 .kerrosvyohyke {
-  opacity: 0.42;
+  opacity: 0.5;
 }
 
 .kerrospalkki {
-  opacity: 0.72;
+  opacity: 0.85;
   stroke: #ffffff;
   stroke-width: 1;
 }
 
-.kerrosnimi {
-  font-size: 10.5px;
+/* Kerrosten väliset rajaviivat erottavat rakenteen selvästi. */
+.kerrosreuna {
+  fill: none;
+  stroke: #7c8894;
+  stroke-width: 1;
+}
+
+/* Rasterikuviot materiaalikategorioittain. */
+.kuvioViiva {
+  stroke: #55606c;
+  stroke-width: 1;
+  fill: none;
+  opacity: 0.38;
+}
+
+.kuvioViiva--ohut {
+  stroke-width: 0.7;
+  opacity: 0.28;
+}
+
+.kuvioTaytto {
+  fill: #55606c;
+  opacity: 0.34;
+}
+
+.kerrosnumero {
+  font-size: 13px;
+  font-weight: 600;
   fill: #1c2530;
-  text-anchor: start;
+  text-anchor: middle;
+}
+
+.kerrosnumero--irrallinen {
+  font-size: 12px;
+}
+
+.kerrosJohto {
+  stroke: #7c8894;
+  stroke-width: 1;
+}
+
+.kerrosselite__numero {
+  font-size: 12.5px;
+  font-weight: 600;
+  fill: #1c2530;
   dominant-baseline: middle;
+}
+
+.kerrosselite__teksti {
+  font-size: 13.5px;
+  fill: var(--teksti);
+  dominant-baseline: middle;
+}
+
+.seliteErotin {
+  stroke: var(--reuna);
+  stroke-width: 1;
 }
 
 .kerros--passiivinen .kerrosvyohyke,
@@ -608,7 +660,13 @@ button:focus-visible {
   opacity: 0.16;
 }
 
-.kerros--passiivinen .kerrosnimi {
+.kerros--passiivinen .kerrosreuna {
+  stroke: #b6bec6;
+}
+
+.kerros--passiivinen .kerrosnumero,
+.kerros--passiivinen .kerrosselite__numero,
+.kerros--passiivinen .kerrosselite__teksti {
   fill: #8a95a1;
 }
 
@@ -627,8 +685,14 @@ button:focus-visible {
   stroke-width: 1;
 }
 
+.piirtokehys {
+  fill: none;
+  stroke: #9aa5b1;
+  stroke-width: 1;
+}
+
 .akseliteksti {
-  font-size: 11px;
+  font-size: 13px;
   fill: var(--teksti-himmea);
   font-variant-numeric: tabular-nums;
 }
@@ -638,7 +702,7 @@ button:focus-visible {
 }
 
 .akseliotsikko {
-  font-size: 12px;
+  font-size: 14px;
   fill: var(--teksti-himmea);
   text-anchor: middle;
 }
@@ -730,7 +794,7 @@ button:focus-visible {
 }
 
 .legenda text {
-  font-size: 11.5px;
+  font-size: 13px;
   fill: var(--teksti-himmea);
   dominant-baseline: middle;
 }
@@ -763,7 +827,7 @@ button:focus-visible {
 
 .lukemaLaatikko text {
   fill: #fff;
-  font-size: 11.5px;
+  font-size: 13px;
   font-variant-numeric: tabular-nums;
 }
 

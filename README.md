@@ -88,6 +88,12 @@ Kuivassa rakenteessa käyrä yhtyy kastepistekäyrään eikä sitä piirretä er
 **Glaser-diagrammi (Pa)** — osapaine ja kyllästyspaine, x-akselina diffuusiovastus `s_d`. Osapaine
 piirtyy suorana, ja kondenssin vaikutus näkyy profiilin taittumisena. Sama ilmiö, tarkempi lukema.
 
+**Kerrosten esitys.** Materiaalit piirretään rakennuspiirustusten tapaisilla rasterikuvioilla
+(eriste vinoviivoitus, betoni pistekuvio, puu syykuvio), joten kerrostyypit erottuvat myös
+mustavalkotulosteessa. Kerrokset on numeroitu ja nimetty kuvaajan alla olevassa selitelistassa.
+Ohuet kalvot, kuten 0,2 mm höyrynsulku, piirretään vähimmäisleveydellä, jotta ne näkyvät —
+käyrien koordinaatteihin tämä ei vaikuta.
+
 Vaaka-akselin voi vaihtaa `s_d`:n ja todellisen paksuuden välillä. `s_d` on menetelmän oma esitys,
 mutta kun rakenteessa on höyrytiivis kerros (esimerkiksi 200 mm betonia, `s_d` = 20 m), se vie
 akselilta lähes kaiken tilan — silloin paksuusakseli on luettavampi.

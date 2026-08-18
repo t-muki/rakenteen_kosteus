@@ -9,17 +9,24 @@ import { useMemo, useRef, useState } from 'react';
 import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
+  KerrosSelitelista,
   KerrosVyohykkeet,
+  KuvioMaaritykset,
   MARGINAALI,
+  SELITE_ALKU,
+  X_OTSIKKO_Y,
+  alaTila,
   jaotukset,
+  lado,
   luoSkaala,
   polku,
+  seliteRivit,
 } from './chartPrimitives';
 import { LukemaLaatikko } from './SectionChart';
 
 const LEVEYS = 940;
-const KORKEUS = 580;
-const NIMIPALKKI = 142;
+/** Piirtoalueen korkeus; SVG:n kokonaiskorkeus riippuu selitelistan riveistä. */
+const PIIRTO_KORKEUS = 400;
 
 interface Props {
   tulos: Tulos;
@@ -40,9 +47,13 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   const alueRef = useRef<SVGRectElement>(null);
 
   const piirtoYlä = MARGINAALI.ylä;
-  const piirtoAla = KORKEUS - MARGINAALI.ala;
+  const piirtoAla = piirtoYlä + PIIRTO_KORKEUS;
   const piirtoVasen = MARGINAALI.vasen;
   const piirtoOikea = LEVEYS - MARGINAALI.oikea;
+
+  // Selitelistassa näkyvät kaikki kerrokset, myös laskennan ulkopuoliset.
+  const riveja = seliteRivit(tulos.kerrokset, piirtoVasen, piirtoOikea);
+  const KORKEUS = piirtoAla + alaTila(riveja);
 
   // s_d-akselilla osapaine on suora — se on menetelmän oma esitys. Paksuusakseli
   // on luettavampi silloin, kun yksi kerros hallitsee diffuusiovastusta.
@@ -114,6 +125,7 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
       role="img"
       aria-label="Glaser-diagrammi: vesihöyryn osapaine ja kyllästyspaine"
     >
+      <KuvioMaaritykset />
       <rect x={0} y={0} width={LEVEYS} height={KORKEUS} className="kuvaajaTausta" />
 
       <KerrosVyohykkeet
@@ -121,12 +133,12 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
         reuna={kerrosReuna}
         ylä={piirtoYlä}
         ala={piirtoAla}
-        nimiPalkki={NIMIPALKKI}
       />
 
       <Akselit
         leveys={LEVEYS}
-        korkeus={KORKEUS}
+        ylä={piirtoYlä}
+        ala={piirtoAla}
         yArvot={yArvot}
         yPix={yPix}
         yOtsikko="Vesihöyryn paine [Pa]"
@@ -202,13 +214,28 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
 
       <text
         x={(piirtoVasen + piirtoOikea) / 2}
-        y={KORKEUS - 8}
+        y={piirtoAla + X_OTSIKKO_Y}
         className="akseliotsikko akseliotsikko--x"
       >
         {akseli === 'sd'
           ? `Kumulatiivinen diffuusiovastus s_d [m] — yhteensä ${tulos.sdTot.toFixed(2)} m`
           : `Etäisyys sisäpinnasta [mm] — diffuusiovastus yhteensä ${tulos.sdTot.toFixed(2)} m`}
       </text>
+
+      <line
+        x1={piirtoVasen}
+        x2={piirtoOikea}
+        y1={piirtoAla + SELITE_ALKU - 20}
+        y2={piirtoAla + SELITE_ALKU - 20}
+        className="seliteErotin"
+      />
+
+      <KerrosSelitelista
+        kerrokset={tulos.kerrokset}
+        alku={piirtoVasen}
+        loppu={piirtoOikea}
+        y={piirtoAla + SELITE_ALKU}
+      />
 
       <rect
         ref={alueRef}
@@ -231,24 +258,26 @@ function Legenda({ x, y, kondenssia }: { x: number; y: number; kondenssia: boole
     ...(kondenssia ? [{ luokka: 'pLinKayra', teksti: 'p ilman kondenssia' }] : []),
   ];
 
+  const laatikot = kondenssia
+    ? [{ luokka: 'kondenssiAlue', teksti: 'Tiivistymisvyöhyke', laatikko: true }]
+    : [];
+  const kaikki = [...kohdat.map((k) => ({ ...k, laatikko: false })), ...laatikot];
+  const { ladotut } = lado(kaikki, (k) => k.teksti, { alku: x, loppu: LEVEYS - MARGINAALI.oikea });
+
   return (
     <g className="legenda">
-      {kohdat.map((kohta, i) => (
-        <g key={kohta.teksti} transform={`translate(${x + i * 200},${y})`}>
-          <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
+      {ladotut.map(({ kohta, x: kx, rivi }) => (
+        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * 18})`}>
+          {kohta.laatikko ? (
+            <rect x={0} y={-7} width={26} height={14} className={kohta.luokka} />
+          ) : (
+            <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
+          )}
           <text x={34} y={4}>
             {kohta.teksti}
           </text>
         </g>
       ))}
-      {kondenssia && (
-        <g transform={`translate(${x + kohdat.length * 200},${y})`}>
-          <rect x={0} y={-7} width={26} height={14} className="kondenssiAlue" />
-          <text x={34} y={4}>
-            Tiivistymisvyöhyke
-          </text>
-        </g>
-      )}
     </g>
   );
 }

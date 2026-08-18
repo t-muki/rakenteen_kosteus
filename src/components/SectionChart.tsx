@@ -10,17 +10,25 @@ import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
   ILMA_LEVEYS,
+  KERROSPALKKI,
+  KerrosSelitelista,
   KerrosVyohykkeet,
+  KuvioMaaritykset,
   MARGINAALI,
+  SELITE_ALKU,
+  X_OTSIKKO_Y,
+  alaTila,
   aluePolku,
   jaotukset,
+  lado,
   luoSkaala,
   polku,
+  seliteRivit,
 } from './chartPrimitives';
 
 const LEVEYS = 940;
-const KORKEUS = 580;
-const NIMIPALKKI = 142;
+/** Piirtoalueen korkeus; SVG:n kokonaiskorkeus riippuu selitelistan riveistä. */
+const PIIRTO_KORKEUS = 400;
 
 interface Props {
   tulos: Tulos;
@@ -34,9 +42,15 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
   const alueRef = useRef<SVGRectElement>(null);
 
   const piirtoYlä = MARGINAALI.ylä;
-  const piirtoAla = KORKEUS - MARGINAALI.ala;
+  const piirtoAla = piirtoYlä + PIIRTO_KORKEUS;
   const rakenneAlku = MARGINAALI.vasen + ILMA_LEVEYS;
   const rakenneLoppu = LEVEYS - MARGINAALI.oikea - ILMA_LEVEYS;
+
+  // Selitelistan rivimäärä määrää kuvaajan kokonaiskorkeuden.
+  const seliteVasen = MARGINAALI.vasen;
+  const seliteOikea = LEVEYS - MARGINAALI.oikea;
+  const riveja = seliteRivit(tulos.kerrokset, seliteVasen, seliteOikea);
+  const KORKEUS = piirtoAla + alaTila(riveja);
 
   const {
     xPix,
@@ -137,6 +151,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
       role="img"
       aria-label="Seinärakenteen lämpötila- ja kastepistekäyrä"
     >
+      <KuvioMaaritykset />
       <rect x={0} y={0} width={LEVEYS} height={KORKEUS} className="kuvaajaTausta" />
 
       {/* Sisä- ja ulkoilman vyöhykkeet */}
@@ -144,14 +159,14 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         x={MARGINAALI.vasen}
         y={piirtoYlä}
         width={ILMA_LEVEYS}
-        height={piirtoAla - piirtoYlä + NIMIPALKKI}
+        height={piirtoAla - piirtoYlä + KERROSPALKKI}
         className="ilmavyohyke ilmavyohyke--sisa"
       />
       <rect
         x={rakenneLoppu}
         y={piirtoYlä}
         width={ILMA_LEVEYS}
-        height={piirtoAla - piirtoYlä + NIMIPALKKI}
+        height={piirtoAla - piirtoYlä + KERROSPALKKI}
         className="ilmavyohyke ilmavyohyke--ulko"
       />
       <text x={MARGINAALI.vasen + ILMA_LEVEYS / 2} y={piirtoYlä - 10} className="vyohykeOtsikko">
@@ -166,12 +181,12 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         reuna={kerrosReuna}
         ylä={piirtoYlä}
         ala={piirtoAla}
-        nimiPalkki={NIMIPALKKI}
       />
 
       <Akselit
         leveys={LEVEYS}
-        korkeus={KORKEUS}
+        ylä={piirtoYlä}
+        ala={piirtoAla}
         yArvot={yArvot}
         yPix={yPix}
         yOtsikko="Lämpötila [°C]"
@@ -293,11 +308,26 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
 
       <text
         x={(rakenneAlku + rakenneLoppu) / 2}
-        y={KORKEUS - 8}
+        y={piirtoAla + X_OTSIKKO_Y}
         className="akseliotsikko akseliotsikko--x"
       >
         Etäisyys sisäpinnasta [mm] — rakenteen paksuus {(tulos.paksuus * 1000).toFixed(0)} mm
       </text>
+
+      <line
+        x1={seliteVasen}
+        x2={seliteOikea}
+        y1={piirtoAla + SELITE_ALKU - 20}
+        y2={piirtoAla + SELITE_ALKU - 20}
+        className="seliteErotin"
+      />
+
+      <KerrosSelitelista
+        kerrokset={tulos.kerrokset}
+        alku={seliteVasen}
+        loppu={seliteOikea}
+        y={piirtoAla + SELITE_ALKU}
+      />
 
       <rect
         ref={alueRef}
@@ -366,28 +396,24 @@ function Legenda({
       : []),
   ];
 
-  // Kohdat ladotaan peräkkäin tekstin pituuden mukaan, jotta ne mahtuvat
-  // yhdelle riville silloinkin kun selitteitä on viisi.
-  let kohdistin = x;
+  // Kohdat ladotaan tekstin pituuden mukaan, jotta ne mahtuvat riveille
+  // silloinkin kun selitteitä on viisi.
+  const { ladotut } = lado(kohdat, (k) => k.teksti, { alku: x, loppu: LEVEYS - MARGINAALI.oikea });
 
   return (
     <g className="legenda">
-      {kohdat.map((kohta) => {
-        const alku = kohdistin;
-        kohdistin += 34 + kohta.teksti.length * 6.1 + 22;
-        return (
-          <g key={kohta.teksti} transform={`translate(${alku},${y})`}>
-            {kohta.laatikko ? (
-              <rect x={0} y={-7} width={26} height={14} className={kohta.luokka} />
-            ) : (
-              <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
-            )}
-            <text x={34} y={4}>
-              {kohta.teksti}
-            </text>
-          </g>
-        );
-      })}
+      {ladotut.map(({ kohta, x: kx, rivi }) => (
+        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * 18})`}>
+          {kohta.laatikko ? (
+            <rect x={0} y={-7} width={26} height={14} className={kohta.luokka} />
+          ) : (
+            <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
+          )}
+          <text x={34} y={4}>
+            {kohta.teksti}
+          </text>
+        </g>
+      ))}
     </g>
   );
 }

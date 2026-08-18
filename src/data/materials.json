@@ -361,7 +361,7 @@
   },
   {
     "id": "hoyrynsulku-pe",
-    "nimi": "Höyrynsulkumuovi PE 0,2 mm",
+    "nimi": "Höyrynsulkumuovi PE",
     "kategoria": "kalvo",
     "lambda": 0.33,
     "mu": 100000,
@@ -526,7 +526,7 @@
   },
   {
     "id": "ilmarako-pysyva",
-    "nimi": "Tuulettumaton ilmarako 20 mm",
+    "nimi": "Tuulettumaton ilmarako",
     "kategoria": "ilmarako",
     "lambda": 0.11,
     "mu": 1,
