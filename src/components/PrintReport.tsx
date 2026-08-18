@@ -7,7 +7,7 @@
  */
 
 import { VAHAINEN_KONDENSSI } from '../lib/calculate';
-import { absoluuttinenKosteus, kastepiste, osapaine } from '../lib/psychrometrics';
+import { absoluuttinenKosteus, hoyrynTiheys, kastepiste, osapaine } from '../lib/psychrometrics';
 import type { Olosuhde, Rakenne, RakenneTyyppi, Tulos } from '../lib/types';
 
 const RAKENNEOSA: Record<RakenneTyyppi, string> = {
@@ -75,6 +75,7 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               <th scope="col">Kastepiste</th>
               <th scope="col">Osapaine</th>
               <th scope="col">Kosteussisältö</th>
+              <th scope="col">Vesihöyrypitoisuus</th>
             </tr>
           </thead>
           <tbody>
@@ -251,6 +252,7 @@ function OlosuhdeRivi({ nimi, olosuhde }: { nimi: string; olosuhde: Olosuhde }) 
       <td>{luku(kastepiste(p), 1)} °C</td>
       <td>{p.toFixed(0)} Pa</td>
       <td>{luku(absoluuttinenKosteus(p), 1)} g/kg</td>
+      <td>{luku(hoyrynTiheys(p, olosuhde.T), 1)} g/m³</td>
     </tr>
   );
 }

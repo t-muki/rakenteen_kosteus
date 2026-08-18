@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   absoluuttinenKosteus,
+  hoyrynTiheys,
   kastepiste,
   osapaine,
   pSat,
@@ -74,6 +75,25 @@ describe('absoluuttinen kosteus', () => {
 
   it('antaa 7,41 g/kg sisäilmalle 15 °C / 70 %', () => {
     expect(absoluuttinenKosteus(osapaine(15, 70))).toBeCloseTo(7.41, 1);
+  });
+});
+
+describe('vesihöyrypitoisuus', () => {
+  // Ideaalikaasulaista ρ = p/(R_v·T); vertailuarvot kosteustaulukoista.
+  it('antaa 8,7 g/m³ ilmalle 20 °C / 50 %', () => {
+    expect(hoyrynTiheys(osapaine(20, 50), 20)).toBeCloseTo(8.65, 1);
+  });
+
+  it('antaa kyllästystilan arvot', () => {
+    // 20 °C kylläisenä noin 17,3 g/m³, 0 °C noin 4,85 g/m³
+    expect(hoyrynTiheys(pSat(20), 20)).toBeCloseTo(17.3, 1);
+    expect(hoyrynTiheys(pSat(0), 0)).toBeCloseTo(4.85, 1);
+  });
+
+  it('kasvaa lämpötilan ja kosteuden mukana', () => {
+    expect(hoyrynTiheys(osapaine(24, 70), 24)).toBeGreaterThan(
+      hoyrynTiheys(osapaine(21, 40), 21),
+    );
   });
 });
 

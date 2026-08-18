@@ -1,7 +1,7 @@
 /** Sisä- ja ulkopuolen olosuhteiden säätö sekä valmiit esiasetukset. */
 
 import type { OlosuhdePreset } from '../lib/materials';
-import { absoluuttinenKosteus, kastepiste, osapaine } from '../lib/psychrometrics';
+import { absoluuttinenKosteus, hoyrynTiheys, kastepiste, osapaine } from '../lib/psychrometrics';
 import type { Olosuhde } from '../lib/types';
 
 interface Props {
@@ -80,6 +80,10 @@ export function ClimateControls({ otsikko, olosuhde, muuta, presetit, lampoRaja 
         <div>
           <dt>Kosteussisältö</dt>
           <dd>{absoluuttinenKosteus(p).toFixed(1)} g/kg</dd>
+        </div>
+        <div>
+          <dt title="Vesihöyryn massa ilmakuutiota kohti">Vesihöyrypitoisuus</dt>
+          <dd>{hoyrynTiheys(p, olosuhde.T).toFixed(1)} g/m³</dd>
         </div>
       </dl>
 
