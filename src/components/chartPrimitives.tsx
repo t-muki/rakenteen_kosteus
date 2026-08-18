@@ -1,6 +1,22 @@
 /** Kuvaajien yhteiset piirtoapurit: skaalaus, akselit ja kerrosvyöhykkeet. */
 
-import type { LaskettuKerros } from '../lib/types';
+import type { KondenssiAlue, LaskettuKerros } from '../lib/types';
+
+/**
+ * Tätä kapeampi tiivistyminen esitetään tasona eikä vyöhykkeenä [m].
+ *
+ * Glaserin verhokäyrä koskettaa kyllästyskäyrää siellä missä se on konveksi.
+ * Materiaalien rajapinnassa kosketus on yksi piste, jolloin vettä erottuu
+ * yhteen tasoon; yhtenäisen paksun kerroksen sisällä kosketus jatkuu pitkän
+ * matkaa ja syntyy todellinen vyöhyke. Nämä kaksi ansaitsevat oman merkintänsä:
+ * nollan levyinen vyöhyke ei erotu kuvasta, vaikka legenda lupaisi sellaisen.
+ */
+export const TIIVISTYMIS_TASO_RAJA = 0.002;
+
+/** Onko tiivistyminen keskittynyt yhteen tasoon vyöhykkeen sijaan. */
+export function onTiivistymisTaso(alue: KondenssiAlue): boolean {
+  return alue.xLoppu - alue.xAlku < TIIVISTYMIS_TASO_RAJA;
+}
 
 export const MARGINAALI = { ylä: 46, oikea: 64, vasen: 62 };
 

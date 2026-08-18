@@ -85,6 +85,14 @@ mihin kastepiste nousisi, jos vesi ei tiivistyisi matkalla — sen ja lämpötil
 kosteusrasituksen mitta. Mitä korkeammalle käyrä kohoaa lämpötilan yli, sitä ankarampi tilanne on.
 Kuivassa rakenteessa käyrä yhtyy kastepistekäyrään eikä sitä piirretä erikseen.
 
+**Rasitusalue ei ole sama kuin tiivistymiskohta.** Vesi erottuu vain siellä, missä Glaserin
+verhokäyrä koskettaa kyllästyskäyrää — ei koko sillä matkalla, jolla kosteusrasitus ylittää
+lämpötilan. Materiaalien rajapinnassa kosketus on yksi piste, jolloin vettä tiivistyy yhteen
+**tasoon** (merkitään pystyviivana); yhtenäisen paksun kerroksen sisällä kosketus jatkuu pitkän
+matkaa ja syntyy todellinen **vyöhyke** (merkitään alueena). Esimerkiksi betonisandwichissa
+rasitusalue voi olla 180 mm, mutta tiivistyminen tapahtuu yhdessä tasossa eristeen ja ulkokuoren
+rajalla.
+
 **Glaser-diagrammi (Pa)** — osapaine ja kyllästyspaine, x-akselina diffuusiovastus `s_d`. Osapaine
 piirtyy suorana, ja kondenssin vaikutus näkyy profiilin taittumisena. Sama ilmiö, tarkempi lukema.
 

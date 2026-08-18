@@ -780,11 +780,17 @@ button:focus-visible {
   stroke-width: 1.4;
 }
 
-.kondenssiTaso {
-  stroke: var(--lampo);
-  stroke-width: 1.4;
-  stroke-dasharray: 3 3;
-  opacity: 0.7;
+/* Rajapintaan keskittynyt tiivistyminen: nollan levyinen vyöhyke ei erottuisi,
+   joten se merkitään selvänä pystyviivana. */
+.tiivistymisTaso {
+  stroke: #b3253a;
+  stroke-width: 3.5;
+  opacity: 0.8;
+  stroke-linecap: round;
+}
+
+.legenda .tiivistymisTaso {
+  stroke-width: 4;
 }
 
 .kondenssiPiste {

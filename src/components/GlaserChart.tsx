@@ -19,6 +19,7 @@ import {
   jaotukset,
   lado,
   luoSkaala,
+  onTiivistymisTaso,
   polku,
   seliteRivit,
 } from './chartPrimitives';
@@ -27,6 +28,8 @@ import { LukemaLaatikko } from './SectionChart';
 const LEVEYS = 940;
 /** Piirtoalueen korkeus; SVG:n kokonaiskorkeus riippuu selitelistan riveistä. */
 const PIIRTO_KORKEUS = 400;
+/** Legendan rivikorkeus. */
+const LEGENDA_RIVI = 18;
 
 interface Props {
   tulos: Tulos;
@@ -46,7 +49,17 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   const [kohdistin, setKohdistin] = useState<number | null>(null);
   const alueRef = useRef<SVGRectElement>(null);
 
-  const piirtoYlä = MARGINAALI.ylä;
+  // Monirivinen legenda työntää piirtoaluetta alaspäin, jottei se peitä kehystä.
+  const kondenssia = tulos.kondenssiTasot.length > 0;
+  const tasojaKuvassa = tulos.kondenssiAlueet.some(onTiivistymisTaso);
+  const vyohykkeitaKuvassa = tulos.kondenssiAlueet.some((a) => !onTiivistymisTaso(a));
+  const legendaKohdat = legendanKohdat(kondenssia, tasojaKuvassa, vyohykkeitaKuvassa);
+  const legendaRivit = lado(legendaKohdat, (k) => k.teksti, {
+    alku: MARGINAALI.vasen,
+    loppu: LEVEYS - MARGINAALI.oikea,
+  }).rivit;
+
+  const piirtoYlä = MARGINAALI.ylä + Math.max(0, legendaRivit - 1) * LEGENDA_RIVI;
   const piirtoAla = piirtoYlä + PIIRTO_KORKEUS;
   const piirtoVasen = MARGINAALI.vasen;
   const piirtoOikea = LEVEYS - MARGINAALI.oikea;
@@ -59,7 +72,16 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   // on luettavampi silloin, kun yksi kerros hallitsee diffuusiovastusta.
   const koordinaatti = (p: { sd: number; x: number }) => (akseli === 'sd' ? p.sd : p.x);
 
-  const { xPix, yPix, yArvot, pSatPolku, pPolku, pLinPolku, kondenssiVyohykkeet } = useMemo(() => {
+  const {
+    xPix,
+    yPix,
+    yArvot,
+    pSatPolku,
+    pPolku,
+    pLinPolku,
+    kondenssiVyohykkeet,
+    kondenssiTasoViivat,
+  } = useMemo(() => {
     const loppu = (akseli === 'sd' ? tulos.sdTot : viimeinenX(tulos)) || 0.001;
     const xPix = luoSkaala(0, loppu, piirtoVasen, piirtoOikea);
 
@@ -70,12 +92,16 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
     const pisteet = (valitse: (p: (typeof tulos.profiili)[number]) => number) =>
       tulos.profiili.map((p) => ({ x: xPix(koordinaatti(p)), y: yPix(valitse(p)) }));
 
-    // Tiivistymisvyöhyke: osapaine on saavuttanut kyllästyspaineen.
-    const kondenssiVyohykkeet = tulos.kondenssiAlueet.map((alue) => {
+    // Tiivistyminen: rajapintaan keskittynyt esitetään tasona, kerroksen
+    // sisälle jakautunut vyöhykkeenä.
+    const kondenssiTasoViivat: number[] = [];
+    const kondenssiVyohykkeet: { x: number; leveys: number }[] = [];
+    for (const alue of tulos.kondenssiAlueet) {
       const vasen = xPix(akseli === 'sd' ? alue.sdAlku : alue.xAlku);
       const oikea = xPix(akseli === 'sd' ? alue.sdLoppu : alue.xLoppu);
-      return { x: vasen, leveys: Math.max(3, oikea - vasen) };
-    });
+      if (onTiivistymisTaso(alue)) kondenssiTasoViivat.push((vasen + oikea) / 2);
+      else kondenssiVyohykkeet.push({ x: vasen, leveys: Math.max(3, oikea - vasen) });
+    }
 
     return {
       xPix,
@@ -85,11 +111,10 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
       pPolku: polku(pisteet((p) => p.p)),
       pLinPolku: polku(pisteet((p) => p.pLin)),
       kondenssiVyohykkeet,
+      kondenssiTasoViivat,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tulos, akseli, piirtoAla, piirtoYlä, piirtoVasen, piirtoOikea]);
-
-  const kondenssia = tulos.kondenssiTasot.length > 0;
 
   const kerrosReuna = (k: LaskettuKerros, puoli: 'alku' | 'loppu') => {
     if (!k.mukanaLaskennassa) return null;
@@ -155,25 +180,23 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
           className="kondenssiAlue"
         />
       ))}
+      {kondenssiTasoViivat.map((x, i) => (
+        <line key={i} x1={x} x2={x} y1={piirtoYlä} y2={piirtoAla} className="tiivistymisTaso" />
+      ))}
 
       <path d={pSatPolku} className="pSatKayra" />
       {kondenssia && <path d={pLinPolku} className="pLinKayra" />}
       <path d={pPolku} className="pKayra" />
 
-      {tulos.kondenssiTasot.map((taso, i) => {
-        const kohta = xPix(akseli === 'sd' ? taso.sd : taso.x);
-        return (
-          <g key={i}>
-            <line x1={kohta} x2={kohta} y1={piirtoYlä} y2={piirtoAla} className="kondenssiTaso" />
-            <circle
-              cx={kohta}
-              cy={yPix(tulos.profiili.find((p) => p.sd >= taso.sd)?.p ?? 0)}
-              r={5}
-              className="kondenssiPiste"
-            />
-          </g>
-        );
-      })}
+      {tulos.kondenssiTasot.map((taso, i) => (
+        <circle
+          key={i}
+          cx={xPix(akseli === 'sd' ? taso.sd : taso.x)}
+          cy={yPix(tulos.profiili.find((p) => p.sd >= taso.sd)?.p ?? 0)}
+          r={5}
+          className="kondenssiPiste"
+        />
+      ))}
 
       {osoitettu && (
         <g className="osoitin">
@@ -210,7 +233,7 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
         </g>
       )}
 
-      <Legenda x={MARGINAALI.vasen} y={18} kondenssia={kondenssia} />
+      <Legenda x={MARGINAALI.vasen} y={18} kohdat={legendaKohdat} />
 
       <text
         x={(piirtoVasen + piirtoOikea) / 2}
@@ -251,23 +274,36 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
   );
 }
 
-function Legenda({ x, y, kondenssia }: { x: number; y: number; kondenssia: boolean }) {
-  const kohdat = [
+interface LegendaKohta {
+  luokka: string;
+  teksti: string;
+  laatikko?: boolean;
+}
+
+/** Legendan sisältö riippuu siitä, mitä kuvassa on näkyvissä. */
+function legendanKohdat(
+  kondenssia: boolean,
+  tasoja: boolean,
+  vyohykkeita: boolean,
+): LegendaKohta[] {
+  return [
     { luokka: 'pSatKayra', teksti: 'Kyllästyspaine p_sat' },
     { luokka: 'pKayra', teksti: 'Osapaine p' },
     ...(kondenssia ? [{ luokka: 'pLinKayra', teksti: 'p ilman kondenssia' }] : []),
+    ...(tasoja ? [{ luokka: 'tiivistymisTaso', teksti: 'Tiivistymistaso' }] : []),
+    ...(vyohykkeita
+      ? [{ luokka: 'kondenssiAlue', teksti: 'Tiivistymisvyöhyke', laatikko: true }]
+      : []),
   ];
+}
 
-  const laatikot = kondenssia
-    ? [{ luokka: 'kondenssiAlue', teksti: 'Tiivistymisvyöhyke', laatikko: true }]
-    : [];
-  const kaikki = [...kohdat.map((k) => ({ ...k, laatikko: false })), ...laatikot];
-  const { ladotut } = lado(kaikki, (k) => k.teksti, { alku: x, loppu: LEVEYS - MARGINAALI.oikea });
+function Legenda({ x, y, kohdat }: { x: number; y: number; kohdat: LegendaKohta[] }) {
+  const { ladotut } = lado(kohdat, (k) => k.teksti, { alku: x, loppu: LEVEYS - MARGINAALI.oikea });
 
   return (
     <g className="legenda">
       {ladotut.map(({ kohta, x: kx, rivi }) => (
-        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * 18})`}>
+        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * LEGENDA_RIVI})`}>
           {kohta.laatikko ? (
             <rect x={0} y={-7} width={26} height={14} className={kohta.luokka} />
           ) : (

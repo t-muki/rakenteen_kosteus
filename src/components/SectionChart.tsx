@@ -22,6 +22,7 @@ import {
   jaotukset,
   lado,
   luoSkaala,
+  onTiivistymisTaso,
   polku,
   seliteRivit,
 } from './chartPrimitives';
@@ -29,6 +30,8 @@ import {
 const LEVEYS = 940;
 /** Piirtoalueen korkeus; SVG:n kokonaiskorkeus riippuu selitelistan riveistä. */
 const PIIRTO_KORKEUS = 400;
+/** Legendan rivikorkeus. */
+const LEGENDA_RIVI = 18;
 
 interface Props {
   tulos: Tulos;
@@ -41,7 +44,18 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
   const [kohdistin, setKohdistin] = useState<number | null>(null);
   const alueRef = useRef<SVGRectElement>(null);
 
-  const piirtoYlä = MARGINAALI.ylä;
+  // Legendan kohdat ja rivimäärä ratkaistaan ennen mitoitusta: monirivinen
+  // legenda työntää piirtoaluetta alaspäin, jottei se peitä vyöhykeotsikoita.
+  const rasitustaKuvassa = tulos.profiili.some((p) => p.TdpLin > p.T + 1e-9);
+  const tasojaKuvassa = tulos.kondenssiAlueet.some(onTiivistymisTaso);
+  const vyohykkeitaKuvassa = tulos.kondenssiAlueet.some((a) => !onTiivistymisTaso(a));
+  const legendaKohdat = legendanKohdat(rasitustaKuvassa, tasojaKuvassa, vyohykkeitaKuvassa);
+  const legendaRivit = lado(legendaKohdat, (k) => k.teksti, {
+    alku: MARGINAALI.vasen,
+    loppu: LEVEYS - MARGINAALI.oikea,
+  }).rivit;
+
+  const piirtoYlä = MARGINAALI.ylä + Math.max(0, legendaRivit - 1) * LEGENDA_RIVI;
   const piirtoAla = piirtoYlä + PIIRTO_KORKEUS;
   const rakenneAlku = MARGINAALI.vasen + ILMA_LEVEYS;
   const rakenneLoppu = LEVEYS - MARGINAALI.oikea - ILMA_LEVEYS;
@@ -61,6 +75,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
     rasitusPolku,
     rasitusAlueet,
     kondenssiVyohykkeet,
+    kondenssiTasoViivat,
     rasitustaOn,
   } = useMemo(() => {
     const paksuus = tulos.paksuus || 0.001;
@@ -95,13 +110,18 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
     }
     if (kaynnissa.length > 0) alueet.push({ ylä: kaynnissa, ala: vastaavaLampo });
 
-    // Tiivistymisvyöhykkeellä lämpötila- ja kastepistekäyrä yhtyvät, joten
-    // vyöhyke merkitään pystysuorana korostuksena.
-    const kondenssiVyohykkeet = tulos.kondenssiAlueet.map((alue) => {
-      const vasen = xPix(alue.xAlku);
-      const oikea = xPix(alue.xLoppu);
-      return { x: vasen, leveys: Math.max(3, oikea - vasen) };
-    });
+    // Tiivistyminen esitetään joko tasona tai vyöhykkeenä sen mukaan, onko se
+    // keskittynyt rajapintaan vai jakautunut kerroksen sisään.
+    const kondenssiTasoViivat: number[] = [];
+    const kondenssiVyohykkeet: { x: number; leveys: number }[] = [];
+    for (const alue of tulos.kondenssiAlueet) {
+      if (onTiivistymisTaso(alue)) {
+        kondenssiTasoViivat.push(xPix((alue.xAlku + alue.xLoppu) / 2));
+      } else {
+        const vasen = xPix(alue.xAlku);
+        kondenssiVyohykkeet.push({ x: vasen, leveys: Math.max(3, xPix(alue.xLoppu) - vasen) });
+      }
+    }
 
     return {
       xPix,
@@ -112,6 +132,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
       rasitusPolku: polku(rasitusPisteet),
       rasitusAlueet: alueet.map((a) => aluePolku(a.ylä, a.ala)),
       kondenssiVyohykkeet,
+      kondenssiTasoViivat,
       rasitustaOn: alueet.length > 0,
     };
   }, [tulos, sisaT, ulkoT, piirtoAla, piirtoYlä, rakenneAlku, rakenneLoppu]);
@@ -199,7 +220,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         <path key={i} d={d} className="rasitusAlue" />
       ))}
 
-      {/* Tiivistymisvyöhykkeet */}
+      {/* Tiivistyminen: leveä vyöhyke alueena, rajapintaan keskittynyt tasona */}
       {kondenssiVyohykkeet.map((v, i) => (
         <rect
           key={i}
@@ -208,6 +229,16 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
           width={v.leveys}
           height={piirtoAla - piirtoYlä}
           className="kondenssiAlue"
+        />
+      ))}
+      {kondenssiTasoViivat.map((x, i) => (
+        <line
+          key={i}
+          x1={x}
+          x2={x}
+          y1={piirtoYlä}
+          y2={piirtoAla}
+          className="tiivistymisTaso"
         />
       ))}
 
@@ -240,18 +271,9 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
       <path d={lampoPolku} className="lampoKayra" />
       <path d={kastepistePolku} className="kastepisteKayra" />
 
-      {/* Kondenssitasot: vyöhykkeen reunat ja voimakkain kohta */}
+      {/* Voimakkain tiivistymiskohta merkitään pisteellä lämpötilakäyrälle */}
       {tulos.kondenssiTasot.map((taso, i) => (
-        <g key={i}>
-          <line
-            x1={xPix(taso.x)}
-            x2={xPix(taso.x)}
-            y1={piirtoYlä}
-            y2={piirtoAla}
-            className="kondenssiTaso"
-          />
-          <circle cx={xPix(taso.x)} cy={yPix(taso.T)} r={5} className="kondenssiPiste" />
-        </g>
+        <circle key={i} cx={xPix(taso.x)} cy={yPix(taso.T)} r={5} className="kondenssiPiste" />
       ))}
 
       {/* Hover-lukemat */}
@@ -299,12 +321,7 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
         </g>
       )}
 
-      <Legenda
-        x={MARGINAALI.vasen}
-        y={18}
-        kondenssia={tulos.kondenssiAlueet.length > 0}
-        rasitusta={rasitustaOn}
-      />
+      <Legenda x={MARGINAALI.vasen} y={18} kohdat={legendaKohdat} />
 
       <text
         x={(rakenneAlku + rakenneLoppu) / 2}
@@ -371,31 +388,39 @@ export function LukemaLaatikko({
   );
 }
 
-function Legenda({
-  x,
-  y,
-  kondenssia,
-  rasitusta,
-}: {
-  x: number;
-  y: number;
-  kondenssia: boolean;
-  rasitusta: boolean;
-}) {
-  const kohdat: { luokka: string; teksti: string; laatikko?: boolean }[] = [
+interface LegendaKohta {
+  luokka: string;
+  teksti: string;
+  laatikko?: boolean;
+}
+
+/** Legendan sisältö riippuu siitä, mitä kuvassa on näkyvissä. */
+function legendanKohdat(
+  rasitusta: boolean,
+  tasoja: boolean,
+  vyohykkeita: boolean,
+): LegendaKohta[] {
+  return [
     { luokka: 'lampoKayra', teksti: 'Lämpötila' },
     { luokka: 'kastepisteKayra', teksti: 'Kastepiste' },
     ...(rasitusta
       ? [
           { luokka: 'rasitusKayra', teksti: 'Kastepiste ilman tiivistymistä' },
-          { luokka: 'rasitusAlue', teksti: 'Kosteusrasitus', laatikko: true },
+          {
+            luokka: 'rasitusAlue',
+            teksti: 'Kosteusrasitus (kastepiste yli lämpötilan)',
+            laatikko: true,
+          },
         ]
       : []),
-    ...(kondenssia
+    ...(tasoja ? [{ luokka: 'tiivistymisTaso', teksti: 'Tiivistymistaso' }] : []),
+    ...(vyohykkeita
       ? [{ luokka: 'kondenssiAlue', teksti: 'Tiivistymisvyöhyke', laatikko: true }]
       : []),
   ];
+}
 
+function Legenda({ x, y, kohdat }: { x: number; y: number; kohdat: LegendaKohta[] }) {
   // Kohdat ladotaan tekstin pituuden mukaan, jotta ne mahtuvat riveille
   // silloinkin kun selitteitä on viisi.
   const { ladotut } = lado(kohdat, (k) => k.teksti, { alku: x, loppu: LEVEYS - MARGINAALI.oikea });
@@ -403,7 +428,7 @@ function Legenda({
   return (
     <g className="legenda">
       {ladotut.map(({ kohta, x: kx, rivi }) => (
-        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * 18})`}>
+        <g key={kohta.teksti} transform={`translate(${kx},${y + rivi * LEGENDA_RIVI})`}>
           {kohta.laatikko ? (
             <rect x={0} y={-7} width={26} height={14} className={kohta.luokka} />
           ) : (
