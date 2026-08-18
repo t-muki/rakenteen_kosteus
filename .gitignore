@@ -8,3 +8,6 @@ tsconfig.tsbuildinfo
 
 # Paikallinen lähdemateriaali — ei julkaista
 esimerkkejä/
+
+# Claude Code -paikalliset asetukset
+.claude/settings.local.json
