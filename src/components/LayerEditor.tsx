@@ -1,6 +1,7 @@
 /** Kerroslista: materiaalin valinta, paksuus, järjestely ja poisto. */
 
 import { useState } from 'react';
+import { fi } from '../lib/muotoile';
 import { kerroksenR, kerroksenSd } from '../lib/thermal';
 import type { Kerros, Materiaali } from '../lib/types';
 import { MaterialPicker } from './MaterialPicker';
@@ -89,10 +90,10 @@ export function LayerEditor({ kerrokset, materiaalit, hakemisto, muuta }: Props)
                     <span>mm</span>
                   </label>
                   <span className="kerrosrivi__tunnus" title="Lämpövastus">
-                    R {R.toFixed(2)}
+                    R {fi(R, 2)}
                   </span>
                   <span className="kerrosrivi__tunnus" title="Vesihöyryn diffuusiovastus">
-                    s<sub>d</sub> {sd < 1 ? sd.toFixed(3) : sd.toFixed(1)} m
+                    s<sub>d</sub> {sd < 1 ? fi(sd, 3) : fi(sd)} m
                   </span>
                 </div>
               </div>

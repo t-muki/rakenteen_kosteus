@@ -1,6 +1,7 @@
 /** Numeeriset tulokset: tunnusluvut, varoitukset ja kerrosrajojen taulukko. */
 
 import { VAHAINEN_KONDENSSI } from '../lib/calculate';
+import { fi } from '../lib/muotoile';
 import type { Tulos } from '../lib/types';
 
 interface Props {
@@ -9,7 +10,7 @@ interface Props {
 
 /** Näyttömuoto kondenssimäärälle; hyvin pienet arvot eivät pyöristy nollaan. */
 function maara(gVrk: number): string {
-  return gVrk < VAHAINEN_KONDENSSI ? `alle ${VAHAINEN_KONDENSSI} ` : `${gVrk.toFixed(2)} `;
+  return gVrk < VAHAINEN_KONDENSSI ? `alle ${fi(VAHAINEN_KONDENSSI, 2)} ` : `${fi(gVrk, 2)} `;
 }
 
 export function ResultsPanel({ tulos }: Props) {
@@ -48,7 +49,7 @@ export function ResultsPanel({ tulos }: Props) {
             <ul>
               {tulos.kondenssiTasot.map((taso, i) => (
                 <li key={i}>
-                  {taso.sijainti}: {maara(taso.gcVrk)}g/(m²·vrk), lämpötila {taso.T.toFixed(1)} °C
+                  {taso.sijainti}: {maara(taso.gcVrk)}g/(m²·vrk), lämpötila {fi(taso.T)} °C
                 </li>
               ))}
             </ul>
@@ -64,15 +65,15 @@ export function ResultsPanel({ tulos }: Props) {
       <dl className="tunnusluvut">
         <div>
           <dt>U-arvo</dt>
-          <dd>{tulos.U.toFixed(3)} W/(m²·K)</dd>
+          <dd>{fi(tulos.U, 3)} W/(m²·K)</dd>
         </div>
         <div>
           <dt>Kokonaisvastus R</dt>
-          <dd>{tulos.Rtot.toFixed(2)} m²·K/W</dd>
+          <dd>{fi(tulos.Rtot, 2)} m²·K/W</dd>
         </div>
         <div>
           <dt>Lämpövirta q</dt>
-          <dd>{tulos.q.toFixed(1)} W/m²</dd>
+          <dd>{fi(tulos.q)} W/m²</dd>
         </div>
         <div>
           <dt>Paksuus</dt>
@@ -82,15 +83,15 @@ export function ResultsPanel({ tulos }: Props) {
           <dt>
             Diffuusiovastus s<sub>d</sub>
           </dt>
-          <dd>{tulos.sdTot.toFixed(2)} m</dd>
+          <dd>{fi(tulos.sdTot, 2)} m</dd>
         </div>
         <div>
           <dt>Diffuusiovuo</dt>
-          <dd>{tulos.diffuusioVuo.toFixed(2)} g/(m²·vrk)</dd>
+          <dd>{fi(tulos.diffuusioVuo, 2)} g/(m²·vrk)</dd>
         </div>
         <div>
           <dt>Sisäpinnan lämpötila</dt>
-          <dd>{tulos.Tsi.toFixed(1)} °C</dd>
+          <dd>{fi(tulos.Tsi)} °C</dd>
         </div>
         <div>
           <dt>Sisäpinnan RH</dt>
@@ -100,7 +101,7 @@ export function ResultsPanel({ tulos }: Props) {
           <dt>
             Lämpötilaindeksi f<sub>Rsi</sub>
           </dt>
-          <dd>{tulos.fRsi.toFixed(2)}</dd>
+          <dd>{fi(tulos.fRsi, 2)}</dd>
         </div>
       </dl>
 
@@ -133,8 +134,8 @@ export function ResultsPanel({ tulos }: Props) {
               <tr key={i} className={solmu.Tdp > solmu.T ? 'rivi--riski' : undefined}>
                 <th scope="row">{solmu.nimi}</th>
                 <td>{(solmu.x * 1000).toFixed(0)}</td>
-                <td>{solmu.T.toFixed(1)}</td>
-                <td>{solmu.Tdp.toFixed(1)}</td>
+                <td>{fi(solmu.T)}</td>
+                <td>{fi(solmu.Tdp)}</td>
                 <td>{solmu.p.toFixed(0)}</td>
                 <td>{solmu.pSat.toFixed(0)}</td>
                 <td>{solmu.RH.toFixed(0)}</td>

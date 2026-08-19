@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { KATEGORIA_JARJESTYS, KATEGORIA_NIMET } from '../lib/materials';
+import { fiLuku } from '../lib/muotoile';
 import type { Kategoria, Materiaali } from '../lib/types';
 
 interface Props {
@@ -69,10 +70,10 @@ export function MaterialPicker({ materiaalit, valitse, sulje }: Props) {
                 <span className="valitsin__vari" style={{ background: m.vari }} aria-hidden="true" />
                 <span className="valitsin__nimi">{m.nimi}</span>
                 <span className="valitsin__arvot">
-                  λ {m.lambda} ·{' '}
+                  λ {fiLuku(m.lambda)} ·{' '}
                   {m.sd !== undefined ? (
                     <>
-                      s<sub>d</sub> {m.sd} m
+                      s<sub>d</sub> {fiLuku(m.sd)} m
                     </>
                   ) : (
                     `μ ${m.mu}`

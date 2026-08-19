@@ -11,6 +11,7 @@ import {
   segmentinVuo,
   vuoVuorokaudessa,
 } from './glaser';
+import { fi } from './muotoile';
 import { kastepiste, osapaine, pSat, suhteellinenKosteus } from './psychrometrics';
 import {
   PINTAVASTUKSET,
@@ -49,11 +50,6 @@ const VUO_EPSILON = 1e-14;
  * moninkertaisesti nopeammin kuin kertyy.
  */
 export const VAHAINEN_KONDENSSI = 0.01;
-
-/** Luku suomalaisella desimaalierottimella käyttäjälle näytettäviin teksteihin. */
-function fi(arvo: number, desimaaleja = 1): string {
-  return arvo.toFixed(desimaaleja).replace('.', ',');
-}
 
 /** Näytepiste laskennan sisäisessä muodossa (kuljettaa x:n kuoren läpi). */
 interface Nayte {

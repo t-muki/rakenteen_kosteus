@@ -7,6 +7,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { fi } from '../lib/muotoile';
 import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
@@ -227,7 +228,7 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
             rajaOikea={piirtoOikea}
             rivit={[
               <>
-                s<Alaindeksi>d</Alaindeksi> {osoitettu.sd.toFixed(2)} m (
+                s<Alaindeksi>d</Alaindeksi> {fi(osoitettu.sd, 2)} m (
                 {(osoitettu.x * 1000).toFixed(0)} mm)
               </>,
               `Osapaine ${osoitettu.p.toFixed(0)} Pa`,
@@ -248,10 +249,10 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
         {akseli === 'sd' ? (
           <>
             Kumulatiivinen diffuusiovastus s<Alaindeksi>d</Alaindeksi> [m] — yhteensä{' '}
-            {tulos.sdTot.toFixed(2)} m
+            {fi(tulos.sdTot, 2)} m
           </>
         ) : (
-          `Etäisyys sisäpinnasta [mm] — diffuusiovastus yhteensä ${tulos.sdTot.toFixed(2)} m`
+          `Etäisyys sisäpinnasta [mm] — diffuusiovastus yhteensä ${fi(tulos.sdTot, 2)} m`
         )}
       </text>
 

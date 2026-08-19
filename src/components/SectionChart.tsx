@@ -7,6 +7,7 @@
 
 import { useMemo, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
+import { fi } from '../lib/muotoile';
 import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
@@ -308,12 +309,12 @@ export function SectionChart({ tulos, sisaT, ulkoT, svgRef }: Props) {
             rajaOikea={rakenneLoppu}
             rivit={[
               `${(osoitettu.x * 1000).toFixed(0)} mm sisäpinnasta`,
-              `Lämpötila ${osoitettu.T.toFixed(1)} °C`,
-              `Kastepiste ${osoitettu.Tdp.toFixed(1)} °C`,
+              `Lämpötila ${fi(osoitettu.T)} °C`,
+              `Kastepiste ${fi(osoitettu.Tdp)} °C`,
               ...(osoitettu.TdpLin > osoitettu.T + 1e-9
                 ? [
-                    `Rasitus ${osoitettu.TdpLin.toFixed(1)} °C`,
-                    `Ylitys ${(osoitettu.TdpLin - osoitettu.T).toFixed(1)} °C`,
+                    `Rasitus ${fi(osoitettu.TdpLin)} °C`,
+                    `Ylitys ${fi(osoitettu.TdpLin - osoitettu.T)} °C`,
                   ]
                 : []),
               `Suht. kosteus ${osoitettu.RH.toFixed(0)} %`,

@@ -9,6 +9,7 @@
 import type { ReactNode } from 'react';
 
 import { VAHAINEN_KONDENSSI } from '../lib/calculate';
+import { fi, fiLuku } from '../lib/muotoile';
 import { absoluuttinenKosteus, hoyrynTiheys, kastepiste, osapaine } from '../lib/psychrometrics';
 import type { Olosuhde, Rakenne, RakenneTyyppi, Tulos } from '../lib/types';
 
@@ -26,10 +27,6 @@ interface Props {
 }
 
 /** Suomalainen desimaalierotin luvulle. */
-function luku(arvo: number, desimaaleja = 2): string {
-  return arvo.toFixed(desimaaleja).replace('.', ',');
-}
-
 /** Raportin yläosa: otsikkotiedot. Sijoitetaan kaavion yläpuolelle. */
 export function PrintHeader({ rakenne, tulos, nakyma }: Props) {
   const paivays = new Date().toLocaleDateString('fi-FI', {
@@ -45,7 +42,7 @@ export function PrintHeader({ rakenne, tulos, nakyma }: Props) {
           <h1>{rakenne.nimi}</h1>
           <p>
             {RAKENNEOSA[rakenne.tyyppi]} · {(tulos.paksuus * 1000).toFixed(0)} mm ·{' '}
-            U {luku(tulos.U, 3)} W/(m²·K)
+            U {fi(tulos.U, 3)} W/(m²·K)
           </p>
         </div>
         <div className="tulostus__meta">
@@ -111,11 +108,11 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
                   {k.materiaali.nimi}
                   {!k.mukanaLaskennassa && ' (ei laskennassa)'}
                 </th>
-                <td>{String(k.kerros.paksuus).replace('.', ',')} mm</td>
-                <td>{luku(k.materiaali.lambda, 3)}</td>
+                <td>{fiLuku(k.kerros.paksuus)} mm</td>
+                <td>{fi(k.materiaali.lambda, 3)}</td>
                 <td>{k.materiaali.sd !== undefined ? '—' : k.materiaali.mu}</td>
-                <td>{k.mukanaLaskennassa ? luku(k.R) : '—'}</td>
-                <td>{k.mukanaLaskennassa ? luku(k.sd, k.sd < 1 ? 3 : 1) : '—'}</td>
+                <td>{k.mukanaLaskennassa ? fi(k.R, 2) : '—'}</td>
+                <td>{k.mukanaLaskennassa ? fi(k.sd, k.sd < 1 ? 3 : 1) : '—'}</td>
               </tr>
             ))}
           </tbody>
@@ -125,14 +122,14 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               <th scope="row">Yhteensä</th>
               <td>{(tulos.paksuus * 1000).toFixed(0)} mm</td>
               <td colSpan={2} />
-              <td>{luku(tulos.Rtot)}</td>
-              <td>{luku(tulos.sdTot)}</td>
+              <td>{fi(tulos.Rtot, 2)}</td>
+              <td>{fi(tulos.sdTot, 2)}</td>
             </tr>
           </tfoot>
         </table>
         <p className="tulostus__alaviite">
-          R sisältää pintavastukset R<sub>si</sub> {luku(tulos.Rsi)} ja R<sub>se</sub>{' '}
-          {luku(tulos.Rse)} m²·K/W. Kalvoille annetaan s<sub>d</sub> suoraan taulukkoarvona, jolloin
+          R sisältää pintavastukset R<sub>si</sub> {fi(tulos.Rsi, 2)} ja R<sub>se</sub>{' '}
+          {fi(tulos.Rse, 2)} m²·K/W. Kalvoille annetaan s<sub>d</sub> suoraan taulukkoarvona, jolloin
           μ ei ole käytössä.
         </p>
       </section>
@@ -140,19 +137,19 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
       <section className="tulostus__lohko">
         <h2>Tunnusluvut</h2>
         <dl className="tulostus__tunnusluvut">
-          <Tunnusluku nimi="Lämmönläpäisykerroin U" arvo={`${luku(tulos.U, 3)} W/(m²·K)`} />
-          <Tunnusluku nimi="Kokonaislämpövastus R" arvo={`${luku(tulos.Rtot)} m²·K/W`} />
-          <Tunnusluku nimi="Lämpövirran tiheys q" arvo={`${luku(tulos.q, 1)} W/m²`} />
+          <Tunnusluku nimi="Lämmönläpäisykerroin U" arvo={`${fi(tulos.U, 3)} W/(m²·K)`} />
+          <Tunnusluku nimi="Kokonaislämpövastus R" arvo={`${fi(tulos.Rtot, 2)} m²·K/W`} />
+          <Tunnusluku nimi="Lämpövirran tiheys q" arvo={`${fi(tulos.q, 1)} W/m²`} />
           <Tunnusluku
             nimi={
               <>
                 Diffuusiovastus s<sub>d</sub>
               </>
             }
-            arvo={`${luku(tulos.sdTot)} m`}
+            arvo={`${fi(tulos.sdTot, 2)} m`}
           />
-          <Tunnusluku nimi="Diffuusiovuo" arvo={`${luku(tulos.diffuusioVuo)} g/(m²·vrk)`} />
-          <Tunnusluku nimi="Sisäpinnan lämpötila" arvo={`${luku(tulos.Tsi, 1)} °C`} />
+          <Tunnusluku nimi="Diffuusiovuo" arvo={`${fi(tulos.diffuusioVuo, 2)} g/(m²·vrk)`} />
+          <Tunnusluku nimi="Sisäpinnan lämpötila" arvo={`${fi(tulos.Tsi, 1)} °C`} />
           <Tunnusluku nimi="Sisäpinnan suht. kosteus" arvo={`${tulos.RHsi.toFixed(0)} %`} />
           <Tunnusluku
             nimi={
@@ -160,7 +157,7 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
                 Lämpötilaindeksi f<sub>Rsi</sub>
               </>
             }
-            arvo={luku(tulos.fRsi)}
+            arvo={fi(tulos.fRsi, 2)}
           />
         </dl>
       </section>
@@ -188,11 +185,11 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               {tulos.kondenssiTasot.map((taso, i) => (
                 <tr key={i}>
                   <th scope="row">{taso.sijainti}</th>
-                  <td>{luku(taso.T, 1)} °C</td>
+                  <td>{fi(taso.T, 1)} °C</td>
                   <td>
                     {taso.gcVrk < VAHAINEN_KONDENSSI
-                      ? `alle ${luku(VAHAINEN_KONDENSSI)}`
-                      : luku(taso.gcVrk)}{' '}
+                      ? `alle ${fi(VAHAINEN_KONDENSSI, 2)}`
+                      : fi(taso.gcVrk, 2)}{' '}
                     g/(m²·vrk)
                   </td>
                 </tr>
@@ -234,8 +231,8 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               <tr key={i} className={solmu.Tdp >= solmu.T - 1e-6 ? 'rivi--riski' : undefined}>
                 <th scope="row">{solmu.nimi}</th>
                 <td>{(solmu.x * 1000).toFixed(0)}</td>
-                <td>{luku(solmu.T, 1)}</td>
-                <td>{luku(solmu.Tdp, 1)}</td>
+                <td>{fi(solmu.T, 1)}</td>
+                <td>{fi(solmu.Tdp, 1)}</td>
                 <td>{solmu.p.toFixed(0)}</td>
                 <td>{solmu.pSat.toFixed(0)}</td>
                 <td>{solmu.RH.toFixed(0)}</td>
@@ -268,12 +265,12 @@ function OlosuhdeRivi({ nimi, olosuhde }: { nimi: string; olosuhde: Olosuhde }) 
   return (
     <tr>
       <th scope="row">{nimi}</th>
-      <td>{luku(olosuhde.T, 1)} °C</td>
+      <td>{fi(olosuhde.T, 1)} °C</td>
       <td>{olosuhde.RH.toFixed(0)} %</td>
-      <td>{luku(kastepiste(p), 1)} °C</td>
+      <td>{fi(kastepiste(p), 1)} °C</td>
       <td>{p.toFixed(0)} Pa</td>
-      <td>{luku(absoluuttinenKosteus(p), 1)} g/kg</td>
-      <td>{luku(hoyrynTiheys(p, olosuhde.T), 1)} g/m³</td>
+      <td>{fi(absoluuttinenKosteus(p), 1)} g/kg</td>
+      <td>{fi(hoyrynTiheys(p, olosuhde.T), 1)} g/m³</td>
     </tr>
   );
 }
