@@ -1,6 +1,24 @@
 /** Kuvaajien yhteiset piirtoapurit: skaalaus, akselit ja kerrosvyöhykkeet. */
 
+import type { ReactNode } from 'react';
+
 import type { KondenssiAlue, LaskettuKerros } from '../lib/types';
+
+/**
+ * Alaindeksi SVG-tekstissä, esimerkiksi s_d → s alaindeksillä d.
+ *
+ * baseline-shift koskee vain tämän tspanin sisältöä, joten perusviiva palautuu
+ * itsestään eikä sitä tarvitse siirtää erikseen takaisin. Unicodesta ei löydy
+ * alaindeksiä kaikille kirjaimille (d puuttuu), joten merkkitason ratkaisu ei
+ * kelpaa.
+ */
+export function Alaindeksi({ children }: { children: ReactNode }) {
+  return (
+    <tspan baselineShift="sub" fontSize="0.72em">
+      {children}
+    </tspan>
+  );
+}
 
 /**
  * Tätä kapeampi tiivistyminen esitetään tasona eikä vyöhykkeenä [m].

@@ -31,6 +31,15 @@ body {
   background: var(--tausta);
 }
 
+/*
+ * Suureiden alaindeksit (s_d, p_sat, R_si, f_Rsi). line-height: 0 estää
+ * alaindeksiä venyttämästä riviväliä taulukoissa ja napeissa.
+ */
+sub {
+  font-size: 0.72em;
+  line-height: 0;
+}
+
 .sovellus {
   max-width: 1680px;
   margin: 0 auto;

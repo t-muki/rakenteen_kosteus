@@ -6,6 +6,7 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
@@ -368,7 +369,7 @@ export function LukemaLaatikko({
 }: {
   x: number;
   y: number;
-  rivit: string[];
+  rivit: ReactNode[];
   rajaOikea: number;
 }) {
   const leveys = 186;
@@ -380,7 +381,8 @@ export function LukemaLaatikko({
     <g className="lukemaLaatikko">
       <rect x={laatikkoX} y={y} width={leveys} height={korkeus} rx={6} />
       {rivit.map((rivi, i) => (
-        <text key={rivi} x={laatikkoX + 10} y={y + 21 + i * 18}>
+        // Rivi voi sisältää alaindeksin, joten avaimeksi kelpaa vain järjestys.
+        <text key={i} x={laatikkoX + 10} y={y + 21 + i * 18}>
           {rivi}
         </text>
       ))}
@@ -390,7 +392,10 @@ export function LukemaLaatikko({
 
 interface LegendaKohta {
   luokka: string;
+  /** Ladonnan mitta ja React-avain — pelkkää tekstiä. */
   teksti: string;
+  /** Piirrettävä sisältö, jos se poikkeaa tekstistä (esim. alaindeksi). */
+  solmu?: ReactNode;
   laatikko?: boolean;
 }
 
@@ -435,7 +440,7 @@ function Legenda({ x, y, kohdat }: { x: number; y: number; kohdat: LegendaKohta[
             <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
           )}
           <text x={34} y={4}>
-            {kohta.teksti}
+            {kohta.solmu ?? kohta.teksti}
           </text>
         </g>
       ))}

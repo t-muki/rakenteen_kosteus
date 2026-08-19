@@ -92,7 +92,7 @@ export function LayerEditor({ kerrokset, materiaalit, hakemisto, muuta }: Props)
                     R {R.toFixed(2)}
                   </span>
                   <span className="kerrosrivi__tunnus" title="Vesihöyryn diffuusiovastus">
-                    s_d {sd < 1 ? sd.toFixed(3) : sd.toFixed(1)} m
+                    s<sub>d</sub> {sd < 1 ? sd.toFixed(3) : sd.toFixed(1)} m
                   </span>
                 </div>
               </div>

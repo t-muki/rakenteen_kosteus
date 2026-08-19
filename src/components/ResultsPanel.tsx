@@ -79,7 +79,9 @@ export function ResultsPanel({ tulos }: Props) {
           <dd>{(tulos.paksuus * 1000).toFixed(0)} mm</dd>
         </div>
         <div>
-          <dt>Diffuusiovastus s_d</dt>
+          <dt>
+            Diffuusiovastus s<sub>d</sub>
+          </dt>
           <dd>{tulos.sdTot.toFixed(2)} m</dd>
         </div>
         <div>
@@ -95,7 +97,9 @@ export function ResultsPanel({ tulos }: Props) {
           <dd>{tulos.RHsi.toFixed(0)} %</dd>
         </div>
         <div>
-          <dt>Lämpötilaindeksi f_Rsi</dt>
+          <dt>
+            Lämpötilaindeksi f<sub>Rsi</sub>
+          </dt>
           <dd>{tulos.fRsi.toFixed(2)}</dd>
         </div>
       </dl>
@@ -118,7 +122,9 @@ export function ResultsPanel({ tulos }: Props) {
               <th scope="col">T [°C]</th>
               <th scope="col">T_kaste [°C]</th>
               <th scope="col">p [Pa]</th>
-              <th scope="col">p_sat [Pa]</th>
+              <th scope="col">
+                p<sub>sat</sub> [Pa]
+              </th>
               <th scope="col">RH [%]</th>
             </tr>
           </thead>

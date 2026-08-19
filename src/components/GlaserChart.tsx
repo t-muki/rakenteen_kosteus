@@ -6,9 +6,11 @@
  */
 
 import { useMemo, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import type { LaskettuKerros, Tulos } from '../lib/types';
 import {
   Akselit,
+  Alaindeksi,
   KerrosSelitelista,
   KerrosVyohykkeet,
   KuvioMaaritykset,
@@ -224,7 +226,10 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
             y={piirtoYlä + 8}
             rajaOikea={piirtoOikea}
             rivit={[
-              `s_d ${osoitettu.sd.toFixed(2)} m (${(osoitettu.x * 1000).toFixed(0)} mm)`,
+              <>
+                s<Alaindeksi>d</Alaindeksi> {osoitettu.sd.toFixed(2)} m (
+                {(osoitettu.x * 1000).toFixed(0)} mm)
+              </>,
               `Osapaine ${osoitettu.p.toFixed(0)} Pa`,
               `Kyllästyspaine ${osoitettu.pSat.toFixed(0)} Pa`,
               `Suht. kosteus ${osoitettu.RH.toFixed(0)} %`,
@@ -240,9 +245,14 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
         y={piirtoAla + X_OTSIKKO_Y}
         className="akseliotsikko akseliotsikko--x"
       >
-        {akseli === 'sd'
-          ? `Kumulatiivinen diffuusiovastus s_d [m] — yhteensä ${tulos.sdTot.toFixed(2)} m`
-          : `Etäisyys sisäpinnasta [mm] — diffuusiovastus yhteensä ${tulos.sdTot.toFixed(2)} m`}
+        {akseli === 'sd' ? (
+          <>
+            Kumulatiivinen diffuusiovastus s<Alaindeksi>d</Alaindeksi> [m] — yhteensä{' '}
+            {tulos.sdTot.toFixed(2)} m
+          </>
+        ) : (
+          `Etäisyys sisäpinnasta [mm] — diffuusiovastus yhteensä ${tulos.sdTot.toFixed(2)} m`
+        )}
       </text>
 
       <line
@@ -276,7 +286,10 @@ export function GlaserChart({ tulos, akseli, svgRef }: Props) {
 
 interface LegendaKohta {
   luokka: string;
+  /** Ladonnan mitta ja React-avain — pelkkää tekstiä. */
   teksti: string;
+  /** Piirrettävä sisältö, jos se poikkeaa tekstistä (esim. alaindeksi). */
+  solmu?: ReactNode;
   laatikko?: boolean;
 }
 
@@ -287,7 +300,15 @@ function legendanKohdat(
   vyohykkeita: boolean,
 ): LegendaKohta[] {
   return [
-    { luokka: 'pSatKayra', teksti: 'Kyllästyspaine p_sat' },
+    {
+      luokka: 'pSatKayra',
+      teksti: 'Kyllästyspaine p_sat',
+      solmu: (
+        <>
+          Kyllästyspaine p<Alaindeksi>sat</Alaindeksi>
+        </>
+      ),
+    },
     { luokka: 'pKayra', teksti: 'Osapaine p' },
     ...(kondenssia ? [{ luokka: 'pLinKayra', teksti: 'p ilman kondenssia' }] : []),
     ...(tasoja ? [{ luokka: 'tiivistymisTaso', teksti: 'Tiivistymistaso' }] : []),
@@ -310,7 +331,7 @@ function Legenda({ x, y, kohdat }: { x: number; y: number; kohdat: LegendaKohta[
             <line x1={0} x2={26} y1={0} y2={0} className={kohta.luokka} />
           )}
           <text x={34} y={4}>
-            {kohta.teksti}
+            {kohta.solmu ?? kohta.teksti}
           </text>
         </g>
       ))}

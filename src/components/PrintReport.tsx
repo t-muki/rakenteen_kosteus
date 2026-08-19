@@ -6,6 +6,8 @@
  * valitaan "Tallenna PDF-tiedostona", jolloin kaavio säilyy vektorina.
  */
 
+import type { ReactNode } from 'react';
+
 import { VAHAINEN_KONDENSSI } from '../lib/calculate';
 import { absoluuttinenKosteus, hoyrynTiheys, kastepiste, osapaine } from '../lib/psychrometrics';
 import type { Olosuhde, Rakenne, RakenneTyyppi, Tulos } from '../lib/types';
@@ -96,7 +98,9 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               <th scope="col">λ [W/mK]</th>
               <th scope="col">μ [-]</th>
               <th scope="col">R [m²K/W]</th>
-              <th scope="col">s_d [m]</th>
+              <th scope="col">
+                s<sub>d</sub> [m]
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -127,8 +131,9 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
           </tfoot>
         </table>
         <p className="tulostus__alaviite">
-          R sisältää pintavastukset R_si {luku(tulos.Rsi)} ja R_se {luku(tulos.Rse)} m²·K/W.
-          Kalvoille annetaan s_d suoraan taulukkoarvona, jolloin μ ei ole käytössä.
+          R sisältää pintavastukset R<sub>si</sub> {luku(tulos.Rsi)} ja R<sub>se</sub>{' '}
+          {luku(tulos.Rse)} m²·K/W. Kalvoille annetaan s<sub>d</sub> suoraan taulukkoarvona, jolloin
+          μ ei ole käytössä.
         </p>
       </section>
 
@@ -138,11 +143,25 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
           <Tunnusluku nimi="Lämmönläpäisykerroin U" arvo={`${luku(tulos.U, 3)} W/(m²·K)`} />
           <Tunnusluku nimi="Kokonaislämpövastus R" arvo={`${luku(tulos.Rtot)} m²·K/W`} />
           <Tunnusluku nimi="Lämpövirran tiheys q" arvo={`${luku(tulos.q, 1)} W/m²`} />
-          <Tunnusluku nimi="Diffuusiovastus s_d" arvo={`${luku(tulos.sdTot)} m`} />
+          <Tunnusluku
+            nimi={
+              <>
+                Diffuusiovastus s<sub>d</sub>
+              </>
+            }
+            arvo={`${luku(tulos.sdTot)} m`}
+          />
           <Tunnusluku nimi="Diffuusiovuo" arvo={`${luku(tulos.diffuusioVuo)} g/(m²·vrk)`} />
           <Tunnusluku nimi="Sisäpinnan lämpötila" arvo={`${luku(tulos.Tsi, 1)} °C`} />
           <Tunnusluku nimi="Sisäpinnan suht. kosteus" arvo={`${tulos.RHsi.toFixed(0)} %`} />
-          <Tunnusluku nimi="Lämpötilaindeksi f_Rsi" arvo={luku(tulos.fRsi)} />
+          <Tunnusluku
+            nimi={
+              <>
+                Lämpötilaindeksi f<sub>Rsi</sub>
+              </>
+            }
+            arvo={luku(tulos.fRsi)}
+          />
         </dl>
       </section>
 
@@ -204,7 +223,9 @@ export function PrintDetails({ rakenne, tulos }: Omit<Props, 'nakyma'>) {
               <th scope="col">T [°C]</th>
               <th scope="col">T_kaste [°C]</th>
               <th scope="col">p [Pa]</th>
-              <th scope="col">p_sat [Pa]</th>
+              <th scope="col">
+                p<sub>sat</sub> [Pa]
+              </th>
               <th scope="col">RH [%]</th>
             </tr>
           </thead>
@@ -257,7 +278,7 @@ function OlosuhdeRivi({ nimi, olosuhde }: { nimi: string; olosuhde: Olosuhde }) 
   );
 }
 
-function Tunnusluku({ nimi, arvo }: { nimi: string; arvo: string }) {
+function Tunnusluku({ nimi, arvo }: { nimi: ReactNode; arvo: string }) {
   return (
     <div>
       <dt>{nimi}</dt>

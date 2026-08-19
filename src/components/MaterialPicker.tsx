@@ -69,7 +69,14 @@ export function MaterialPicker({ materiaalit, valitse, sulje }: Props) {
                 <span className="valitsin__vari" style={{ background: m.vari }} aria-hidden="true" />
                 <span className="valitsin__nimi">{m.nimi}</span>
                 <span className="valitsin__arvot">
-                  λ {m.lambda} · {m.sd !== undefined ? `s_d ${m.sd} m` : `μ ${m.mu}`}
+                  λ {m.lambda} ·{' '}
+                  {m.sd !== undefined ? (
+                    <>
+                      s<sub>d</sub> {m.sd} m
+                    </>
+                  ) : (
+                    `μ ${m.mu}`
+                  )}
                 </span>
               </button>
             ))}
