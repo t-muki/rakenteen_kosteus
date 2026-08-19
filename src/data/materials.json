@@ -156,6 +156,18 @@
     "lahde": "SFS-EN ISO 10456"
   },
   {
+    "id": "lastuvillalevy",
+    "nimi": "Puulastuvillalevy (Toja)",
+    "kategoria": "eriste",
+    "lambda": 0.09,
+    "mu": 5,
+    "rho": 400,
+    "c": 1800,
+    "oletusPaksuus": 25,
+    "vari": "#a9a091",
+    "lahde": "Puulastuvillalevy EN 13168 (WW); λ 0,065…0,09 tuotteesta riippuen"
+  },
+  {
     "id": "betoni",
     "nimi": "Teräsbetoni",
     "kategoria": "massiivinen",
